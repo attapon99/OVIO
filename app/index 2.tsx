@@ -1,58 +1,10 @@
-import type { ReactNode } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
-export type ScreenTab = "library" | "recording" | "settings";
-
-export function OvioScreenShell({
-  children,
-  activeTab,
-  subtitle,
-  onTabPress,
-}: {
-  children: ReactNode;
-  activeTab: ScreenTab;
-  subtitle: string;
-  onTabPress: (tab: ScreenTab) => void;
-}) {
-  return (
-    <SafeAreaView style={styles.screen} edges={["top", "left", "right", "bottom"]}>
-      <View style={styles.phoneFrame}>
-        <View style={styles.headerContainer}>
-          <OvioHeader subtitle={subtitle} />
-        </View>
-        <ScrollView
-          style={styles.scroll}
-          contentContainerStyle={styles.content}
-          showsVerticalScrollIndicator={false}
-        >
-          {children}
-        </ScrollView>
-        <BottomNav activeTab={activeTab} onTabPress={onTabPress} />
-      </View>
-    </SafeAreaView>
-  );
-}
-
-export function OvioHeader({ subtitle }: { subtitle: string }) {
-  return (
-    <>
-      <View style={styles.headerRow}>
-        <View>
-          <Text style={styles.brand}>OVIO</Text>
-          <Text style={styles.subBrand}>{subtitle}</Text>
-        </View>
-      </View>
-      <View style={styles.divider} />
-    </>
-  );
-}
-
-export function SectionLabel({ children }: { children: string }) {
+function SectionLabel({ children }: { children: string }) {
   return <Text style={styles.sectionLabel}>{children}</Text>;
 }
 
-export function StatCard({ label, value }: { label: string; value: string }) {
+function StatCard({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.statCard}>
       <Text style={styles.statLabel}>{label}</Text>
@@ -61,7 +13,32 @@ export function StatCard({ label, value }: { label: string; value: string }) {
   );
 }
 
-export function RecordingCard({
+function SettingRow({
+  label,
+  value,
+  toggle,
+}: {
+  label: string;
+  value?: string;
+  toggle?: boolean;
+}) {
+  return (
+    <Pressable style={styles.rowCard}>
+      <Text style={styles.rowLabel}>{label}</Text>
+      {toggle ? (
+        <View style={styles.toggleTrack}>
+          <View style={styles.toggleThumb} />
+        </View>
+      ) : (
+        <Text style={styles.rowValue}>
+          {value} {">"}
+        </Text>
+      )}
+    </Pressable>
+  );
+}
+
+function RecordingCard({
   tag,
   title,
   time,
@@ -85,140 +62,169 @@ export function RecordingCard({
           <Text style={styles.favoriteIcon}>FAV</Text>
         </View>
         <View style={styles.playButton}>
-          <Text style={styles.playIcon}>PLAY</Text>
+          <Text style={styles.playIcon}>▶</Text>
         </View>
       </View>
     </Pressable>
   );
 }
 
-export function SettingRow({
-  label,
-  value,
-  toggle,
-}: {
-  label: string;
-  value?: string;
-  toggle?: boolean;
-}) {
-  return (
-    <Pressable style={styles.rowCard}>
-      <Text style={styles.rowLabel}>{label}</Text>
-      {toggle ? (
-        <View style={styles.toggleTrack}>
-          <View style={styles.toggleThumb} />
-        </View>
-      ) : (
-        <Text style={styles.rowValue}>{value} &gt;</Text>
-      )}
-    </Pressable>
-  );
-}
-
-export function PremiumCard() {
-  return (
-    <Pressable style={styles.premiumCard}>
-      <Text style={styles.premiumTitle}>OVIO_PREMIUM</Text>
-      <Text style={styles.premiumSubtitle}>ACTIVE UNTIL OCT 2024</Text>
-      <View style={styles.premiumButton}>
-        <Text style={styles.premiumButtonText}>MANAGE_PLAN</Text>
-      </View>
-      <View style={styles.premiumOrb} />
-    </Pressable>
-  );
-}
-
-function BottomNav({
-  activeTab,
-  onTabPress,
-}: {
-  activeTab: ScreenTab;
-  onTabPress: (tab: ScreenTab) => void;
-}) {
-  const isLibrary = activeTab === "library";
-  const isRecording = activeTab === "recording";
-  const isSettings = activeTab === "settings";
-
+function BottomNav() {
   return (
     <View style={styles.bottomNav}>
-      <Pressable
-        style={isLibrary ? styles.navButtonActive : styles.navButton}
-        onPress={() => onTabPress("library")}
-      >
-        <Text style={isLibrary ? styles.navIconActive : styles.navIcon}>
-          LIB
-        </Text>
+      <Pressable style={styles.navButtonActive}>
+        <Text style={styles.navIconActive}>◧</Text>
       </Pressable>
-      <Pressable
-        style={isRecording ? styles.navButtonActive : styles.navButton}
-        onPress={() => onTabPress("recording")}
-      >
-        <Text style={isRecording ? styles.navIconActive : styles.navIcon}>
-          REC
-        </Text>
+      <Pressable style={styles.navButton}>
+        <Text style={styles.navIcon}>◉</Text>
       </Pressable>
-      <Pressable
-        style={isSettings ? styles.navButtonActive : styles.navButton}
-        onPress={() => onTabPress("settings")}
-      >
-        <Text style={isSettings ? styles.navIconActive : styles.navIcon}>
-          SET
-        </Text>
+      <Pressable style={styles.navButton}>
+        <Text style={styles.navIcon}>◍</Text>
       </Pressable>
     </View>
   );
 }
 
-export const styles = StyleSheet.create({
+export default function OvioStaticPrototype() {
+  return (
+    <View style={styles.screen}>
+      <View style={styles.phoneFrame}>
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.headerRow}>
+            <View>
+              <Text style={styles.brand}>OVIO</Text>
+              <Text style={styles.subBrand}>BIBLIOTHEK</Text>
+            </View>
+            <Pressable style={styles.modeBadge}>
+              <Text style={styles.modeText}>DARK_MODE</Text>
+            </Pressable>
+          </View>
+
+          <View style={styles.divider} />
+
+          <SectionLabel>OBSERVATION_STATS</SectionLabel>
+          <View style={styles.statsRow}>
+            <StatCard label="TOTAL HOURS" value="124.5" />
+            <StatCard label="EVENTS CAPTURED" value="892" />
+          </View>
+
+          <SectionLabel>AUDIO_CAPTURED</SectionLabel>
+          <RecordingCard
+            tag="WORK"
+            title="MEETING NOTES: PROJECT X"
+            time="09:30"
+            duration="05:24"
+          />
+          <RecordingCard
+            tag="MUSIC"
+            title="GUITAR PRACTICE_SESSION"
+            time="14:10"
+            duration="18:02"
+          />
+
+          <SectionLabel>CAPTURE_PARAMETERS</SectionLabel>
+          <SettingRow label="SENSITIVITY THRESHOLD" value="HIGH FIDELITY" />
+          <SettingRow label="CLOUD SYNCHRONIZATION" toggle />
+          <SettingRow label="VOICE DETECTION" toggle />
+
+          <SectionLabel>SYSTEM_PREFERENCES</SectionLabel>
+          <SettingRow label="NOTIFICATIONS" value="ENABLED" />
+          <SettingRow label="APPEARANCE" value="LIGHT" />
+          <SettingRow label="STORAGE MANAGEMENT" value="12 GB USED" />
+
+          <SectionLabel>ACCOUNT_&_BILLING</SectionLabel>
+          <Pressable style={styles.premiumCard}>
+            <Text style={styles.premiumTitle}>OVIO_PREMIUM</Text>
+            <Text style={styles.premiumSubtitle}>ACTIVE UNTIL OCT 2024</Text>
+            <View style={styles.premiumButton}>
+              <Text style={styles.premiumButtonText}>MANAGE_PLAN</Text>
+            </View>
+            <View style={styles.premiumOrb} />
+          </Pressable>
+        </ScrollView>
+
+        <BottomNav />
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#ececec",
+    backgroundColor: "#1c1c1e",
+    justifyContent: "center",
+    padding: 14,
   },
   phoneFrame: {
     flex: 1,
     backgroundColor: "#ececec",
-  },
-  headerContainer: {
-    paddingTop: 26,
-    paddingHorizontal: 16,
+    borderRadius: 20,
+    overflow: "hidden",
+    borderWidth: 2,
+    borderColor: "#f7f7f7",
   },
   scroll: {
     flex: 1,
   },
   content: {
+    paddingTop: 28,
     paddingHorizontal: 16,
     paddingBottom: 120,
   },
   headerRow: {
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
   },
   brand: {
-    fontSize: 39,
+    fontSize: 42,
     letterSpacing: -1,
     fontWeight: "900",
     color: "#0d0d0d",
   },
   subBrand: {
-    marginTop: 1,
+    marginTop: 2,
     fontSize: 10,
     letterSpacing: 2.2,
     fontWeight: "700",
     color: "#626262",
   },
+  modeBadge: {
+    borderWidth: 2,
+    borderColor: "#111",
+    borderRadius: 9,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: "#efefef",
+  },
+  modeText: {
+    fontSize: 10,
+    letterSpacing: 0.8,
+    fontWeight: "800",
+    color: "#0d0d0d",
+  },
   divider: {
     height: 1,
-    backgroundColor: "#d5d5d5",
-    marginTop: 10,
-    marginBottom: 12,
+    backgroundColor: "#d8d8d8",
+    marginTop: 16,
+    marginBottom: 18,
   },
   sectionLabel: {
-    marginTop: 8,
-    marginBottom: 8,
+    marginTop: 10,
+    marginBottom: 10,
     fontSize: 10,
     letterSpacing: 3,
     fontWeight: "800",
     color: "#7f7f7f",
+  },
+  statsRow: {
+    flexDirection: "row",
+    gap: 10,
   },
   statCard: {
     flex: 1,
@@ -260,7 +266,7 @@ export const styles = StyleSheet.create({
   },
   recordTitle: {
     marginTop: 8,
-    marginRight: 86,
+    marginRight: 78,
     fontSize: 30,
     lineHeight: 30,
     letterSpacing: -0.9,
@@ -285,7 +291,7 @@ export const styles = StyleSheet.create({
     alignItems: "center",
   },
   favoriteButton: {
-    width: 38,
+    width: 34,
     height: 34,
     borderRadius: 11,
     backgroundColor: "#ececec",
@@ -294,8 +300,7 @@ export const styles = StyleSheet.create({
   },
   favoriteIcon: {
     color: "#0c0c0c",
-    fontSize: 11,
-    fontWeight: "700",
+    fontSize: 12,
   },
   playButton: {
     width: 42,
@@ -307,9 +312,8 @@ export const styles = StyleSheet.create({
   },
   playIcon: {
     color: "#fff",
-    fontSize: 10,
-    letterSpacing: 0.8,
-    fontWeight: "800",
+    fontSize: 14,
+    marginLeft: 2,
   },
   rowCard: {
     backgroundColor: "#f4f4f4",
@@ -394,8 +398,8 @@ export const styles = StyleSheet.create({
   },
   bottomNav: {
     position: "absolute",
-    left: 16,
-    right: 16,
+    left: 18,
+    right: 18,
     bottom: 16,
     backgroundColor: "#060606",
     borderRadius: 28,
@@ -421,14 +425,12 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
   },
   navIconActive: {
-    fontSize: 12,
-    letterSpacing: 0.8,
+    fontSize: 20,
     color: "#050505",
     fontWeight: "800",
   },
   navIcon: {
-    fontSize: 12,
-    letterSpacing: 0.8,
+    fontSize: 18,
     color: "#6a6a6a",
     fontWeight: "700",
   },

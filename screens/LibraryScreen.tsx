@@ -1,49 +1,139 @@
+import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { OvioHeader, OvioScreenShell, RecordingCard } from "@/screens/ovio-ui";
+import { OvioScreenShell, RecordingCard, type ScreenTab } from "@/screens/ovio-ui";
 
-export default function LibraryScreen() {
+export default function LibraryScreen({
+  onTabPress,
+}: {
+  onTabPress: (tab: ScreenTab) => void;
+}) {
+  const months = [
+    "JAN",
+    "FEB",
+    "MAR",
+    "APR",
+    "MAY",
+    "JUN",
+    "JUL",
+    "AUG",
+    "SEP",
+    "OCT",
+    "NOV",
+    "DEC",
+  ];
+  const years = [2022, 2023, 2024, 2025];
+  const days = [
+    { weekday: "M", day: 23 },
+    { weekday: "T", day: 24 },
+    { weekday: "W", day: 25 },
+    { weekday: "T", day: 26 },
+    { weekday: "F", day: 27 },
+    { weekday: "S", day: 28 },
+    { weekday: "S", day: 29 },
+  ];
+  const [selectedDay, setSelectedDay] = useState(23);
+  const [selectedMonthIndex, setSelectedMonthIndex] = useState(9);
+  const [selectedYear, setSelectedYear] = useState(2023);
+  const [pickerOpen, setPickerOpen] = useState(false);
+
   return (
-    <OvioScreenShell activeTab="library">
-      <OvioHeader subtitle="BIBLIOTHEK" />
-
+    <OvioScreenShell
+      activeTab="library"
+      subtitle="BIBLIOTHEK"
+      onTabPress={onTabPress}
+    >
       <View style={styles.sectionHead}>
         <Text style={styles.sectionLabel}>TIMELINE RANGE</Text>
-        <Text style={styles.sectionMeta}>OCT 2023</Text>
-      </View>
-      <View style={styles.timelineRow}>
-        <Pressable style={styles.activeDateTile}>
-          <Text style={styles.activeDateWeekday}>M</Text>
-          <Text style={styles.activeDateNumber}>23</Text>
+        <Pressable
+          style={styles.monthChip}
+          onPress={() => setPickerOpen((open) => !open)}
+        >
+          <Text style={styles.sectionMeta}>
+            {months[selectedMonthIndex]} {selectedYear}
+          </Text>
         </Pressable>
-        <View style={styles.inactiveDateTile}>
-          <Text style={styles.inactiveDateWeekday}>T</Text>
-          <Text style={styles.inactiveDateNumber}>24</Text>
+      </View>
+      {pickerOpen ? (
+        <View style={styles.pickerPanel}>
+          <Text style={styles.pickerLabel}>SELECT MONTH</Text>
+          <View style={styles.monthGrid}>
+            {months.map((month, index) => {
+              const isActive = selectedMonthIndex === index;
+              return (
+                <Pressable
+                  key={month}
+                  style={isActive ? styles.activePickerCell : styles.pickerCell}
+                  onPress={() => setSelectedMonthIndex(index)}
+                >
+                  <Text
+                    style={
+                      isActive ? styles.activePickerText : styles.pickerCellText
+                    }
+                  >
+                    {month}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          <Text style={styles.pickerLabel}>SELECT YEAR</Text>
+          <View style={styles.yearRow}>
+            {years.map((year) => {
+              const isActive = selectedYear === year;
+              return (
+                <Pressable
+                  key={year}
+                  style={isActive ? styles.activePickerCell : styles.pickerCell}
+                  onPress={() => setSelectedYear(year)}
+                >
+                  <Text
+                    style={
+                      isActive ? styles.activePickerText : styles.pickerCellText
+                    }
+                  >
+                    {year}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
         </View>
-        <View style={styles.inactiveDateTile}>
-          <Text style={styles.inactiveDateWeekday}>W</Text>
-          <Text style={styles.inactiveDateNumber}>25</Text>
-        </View>
-        <View style={styles.inactiveDateTile}>
-          <Text style={styles.inactiveDateWeekday}>T</Text>
-          <Text style={styles.inactiveDateNumber}>26</Text>
-        </View>
-        <View style={styles.inactiveDateTile}>
-          <Text style={styles.inactiveDateWeekday}>F</Text>
-          <Text style={styles.inactiveDateNumber}>27</Text>
-        </View>
-        <View style={styles.inactiveDateTile}>
-          <Text style={styles.inactiveDateWeekday}>S</Text>
-          <Text style={styles.inactiveDateNumber}>28</Text>
-        </View>
-        <View style={styles.inactiveDateTile}>
-          <Text style={styles.inactiveDateWeekday}>S</Text>
-          <Text style={styles.inactiveDateNumber}>29</Text>
-        </View>
+      ) : null}
+      <View style={styles.timelineRow}>
+        {days.map((entry) => {
+          const isSelected = selectedDay === entry.day;
+
+          return (
+            <Pressable
+              key={`${entry.weekday}-${entry.day}`}
+              style={isSelected ? styles.activeDateTile : styles.inactiveDateTile}
+              onPress={() => setSelectedDay(entry.day)}
+            >
+              <Text
+                style={
+                  isSelected
+                    ? styles.activeDateWeekday
+                    : styles.inactiveDateWeekday
+                }
+              >
+                {entry.weekday}
+              </Text>
+              <Text
+                style={
+                  isSelected ? styles.activeDateNumber : styles.inactiveDateNumber
+                }
+              >
+                {entry.day}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
 
       <View style={styles.sectionHead}>
         <Text style={styles.sectionLabel}>AUDIO CAPTURED</Text>
-        <Text style={styles.sectionMeta}>3 ITEMS</Text>
+        <Text style={styles.sectionMeta}>8 ITEMS</Text>
       </View>
       <RecordingCard
         tag="WORK"
@@ -56,6 +146,42 @@ export default function LibraryScreen() {
         title="GUITAR PRACTICE_SESSION"
         time="14:10"
         duration="18:02"
+      />
+      <RecordingCard
+        tag="SLEEP"
+        title="NIGHT 01: SOFT SNORING CHECK"
+        time="23:42"
+        duration="42:18"
+      />
+      <RecordingCard
+        tag="VOICE"
+        title="TALKING DETECTED: 02:13 AM"
+        time="02:13"
+        duration="01:06"
+      />
+      <RecordingCard
+        tag="EVENT"
+        title="FART EVENT CLIP: BEDROOM MIC"
+        time="03:27"
+        duration="00:12"
+      />
+      <RecordingCard
+        tag="SLEEP"
+        title="NIGHT 02: HEAVY SNORING BLOCK"
+        time="00:58"
+        duration="17:40"
+      />
+      <RecordingCard
+        tag="AMBIENT"
+        title="ROOM NOISE BASELINE SAMPLE"
+        time="01:35"
+        duration="08:21"
+      />
+      <RecordingCard
+        tag="VOICE"
+        title="MUMBLING SEGMENT: 04:42 AM"
+        time="04:42"
+        duration="00:48"
       />
     </OvioScreenShell>
   );
@@ -80,6 +206,60 @@ const styles = StyleSheet.create({
     letterSpacing: 0.4,
     fontWeight: "700",
     color: "#909090",
+  },
+  monthChip: {
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    backgroundColor: "#efefef",
+  },
+  pickerPanel: {
+    backgroundColor: "#f4f4f4",
+    borderRadius: 14,
+    padding: 10,
+    marginTop: -2,
+    marginBottom: 10,
+    gap: 8,
+  },
+  pickerLabel: {
+    fontSize: 9,
+    letterSpacing: 1.2,
+    fontWeight: "800",
+    color: "#878787",
+  },
+  monthGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+    marginBottom: 4,
+  },
+  yearRow: {
+    flexDirection: "row",
+    gap: 6,
+  },
+  pickerCell: {
+    borderRadius: 10,
+    backgroundColor: "#ebebeb",
+    paddingVertical: 7,
+    paddingHorizontal: 10,
+  },
+  activePickerCell: {
+    borderRadius: 10,
+    backgroundColor: "#070707",
+    paddingVertical: 7,
+    paddingHorizontal: 10,
+  },
+  pickerCellText: {
+    fontSize: 10,
+    letterSpacing: 0.6,
+    fontWeight: "700",
+    color: "#717171",
+  },
+  activePickerText: {
+    fontSize: 10,
+    letterSpacing: 0.6,
+    fontWeight: "800",
+    color: "#fff",
   },
   timelineRow: {
     marginBottom: 18,
