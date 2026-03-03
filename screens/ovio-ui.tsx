@@ -1,5 +1,7 @@
-import type { ReactNode } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { useRef, useState, type ReactNode } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import Swipeable from "react-native-gesture-handler/Swipeable";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export type ScreenTab = "library" | "recording" | "settings";
@@ -16,7 +18,10 @@ export function OvioScreenShell({
   onTabPress: (tab: ScreenTab) => void;
 }) {
   return (
-    <SafeAreaView style={styles.screen} edges={["top", "left", "right", "bottom"]}>
+    <SafeAreaView
+      style={styles.screen}
+      edges={["top", "left", "right", "bottom"]}
+    >
       <View style={styles.phoneFrame}>
         <View style={styles.headerContainer}>
           <OvioHeader subtitle={subtitle} />
@@ -72,23 +77,59 @@ export function RecordingCard({
   time: string;
   duration: string;
 }) {
+  const swipeableRef = useRef<Swipeable | null>(null);
+  const [isSwipedOpen, setIsSwipedOpen] = useState(false);
+  const [minutes = "0", seconds = "0"] = duration.split(":");
+  const durationLabel = `${parseInt(minutes, 10) || 0}m ${parseInt(seconds, 10) || 0}s`;
+  const closeSwipe = () => {
+    swipeableRef.current?.close();
+    setIsSwipedOpen(false);
+  };
+
+  const renderRightActions = () => (
+    <View style={styles.swipeActions}>
+      <Pressable style={styles.swipeActionButtonDelete} onPress={closeSwipe}>
+        <Ionicons name="trash-outline" size={18} color="#fff" />
+      </Pressable>
+      <Pressable style={styles.swipeActionButton} onPress={closeSwipe}>
+        <Ionicons name="heart-outline" size={18} color="#f7f7f7" />
+      </Pressable>
+      <Pressable style={styles.swipeActionButton} onPress={closeSwipe}>
+        <Ionicons name="share-outline" size={18} color="#f7f7f7" />
+      </Pressable>
+    </View>
+  );
+
   return (
-    <Pressable style={styles.recordCard}>
-      <Text style={styles.recordTag}>{tag}</Text>
-      <Text style={styles.recordTitle}>{title}</Text>
-      <View style={styles.recordMetaRow}>
-        <Text style={styles.recordMeta}>{time}</Text>
-        <Text style={styles.recordMeta}>{duration}</Text>
-      </View>
-      <View style={styles.recordActions}>
-        <View style={styles.favoriteButton}>
-          <Text style={styles.favoriteIcon}>FAV</Text>
+    <Swipeable
+      ref={swipeableRef}
+      renderRightActions={renderRightActions}
+      overshootRight={false}
+      rightThreshold={44}
+      friction={2}
+      onSwipeableOpen={() => setIsSwipedOpen(true)}
+      onSwipeableClose={() => setIsSwipedOpen(false)}
+    >
+      <Pressable
+        style={[styles.recordCard, isSwipedOpen && styles.recordCardActive]}
+      >
+        <View style={styles.recordContent}>
+          <View style={styles.recordTitleRow}>
+            <Text style={styles.recordTitle} numberOfLines={1}>
+              {title}
+            </Text>
+            <View style={styles.soundTypeBadge}>
+              <Text style={styles.soundTypeText} numberOfLines={1}>
+                {tag}
+              </Text>
+            </View>
+          </View>
+          <Text style={styles.recordMeta} numberOfLines={1}>
+            {time} {durationLabel}
+          </Text>
         </View>
-        <View style={styles.playButton}>
-          <Text style={styles.playIcon}>PLAY</Text>
-        </View>
-      </View>
-    </Pressable>
+      </Pressable>
+    </Swipeable>
   );
 }
 
@@ -243,73 +284,79 @@ export const styles = StyleSheet.create({
   recordCard: {
     backgroundColor: "#f4f4f4",
     borderRadius: 18,
-    padding: 14,
+    minHeight: 75,
+    paddingVertical: 8,
+    paddingLeft: 14,
+    paddingRight: 14,
     marginBottom: 10,
-    position: "relative",
+    justifyContent: "center",
   },
-  recordTag: {
-    alignSelf: "flex-start",
-    fontSize: 8,
-    fontWeight: "700",
-    letterSpacing: 0.8,
-    color: "#8b8b8b",
-    backgroundColor: "#ebebeb",
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+  recordCardActive: {
+    backgroundColor: "#e4e4e4",
+  },
+  recordContent: {
+    gap: 11,
+  },
+  recordTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
   },
   recordTitle: {
-    marginTop: 8,
-    marginRight: 86,
-    fontSize: 30,
-    lineHeight: 30,
-    letterSpacing: -0.9,
+    flexShrink: 1,
+    fontSize: 16,
+    lineHeight: 16,
+    letterSpacing: -0.5,
     fontWeight: "900",
     color: "#0c0c0c",
   },
-  recordMetaRow: {
-    flexDirection: "row",
-    gap: 12,
-    marginTop: 12,
+  soundTypeBadge: {
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: "#bebebe",
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    transform: [{ translateY: -1.5 }], //verschiebt das Badge leicht nach oben, damit er nicht unten aligned ist.
+  },
+  soundTypeText: {
+    fontSize: 8,
+    lineHeight: 9,
+    includeFontPadding: false,
+    letterSpacing: 0.5,
+    fontWeight: "800",
+    color: "#6f6f6f",
   },
   recordMeta: {
-    fontSize: 10,
-    fontWeight: "700",
-    color: "#8a8a8a",
-  },
-  recordActions: {
-    position: "absolute",
-    right: 12,
-    top: 38,
-    gap: 8,
-    alignItems: "center",
-  },
-  favoriteButton: {
-    width: 38,
-    height: 34,
-    borderRadius: 11,
-    backgroundColor: "#ececec",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  favoriteIcon: {
-    color: "#0c0c0c",
-    fontSize: 11,
-    fontWeight: "700",
-  },
-  playButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 14,
-    backgroundColor: "#070707",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  playIcon: {
-    color: "#fff",
-    fontSize: 10,
+    fontSize: 12,
     letterSpacing: 0.8,
-    fontWeight: "800",
+    fontWeight: "700",
+    color: "#7a7a7a",
+  },
+  swipeActions: {
+    width: 182,
+    marginBottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  swipeActionButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "#141414",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  swipeActionButtonDelete: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "#d13d3d",
+    alignItems: "center",
+    justifyContent: "center",
   },
   rowCard: {
     backgroundColor: "#f4f4f4",
