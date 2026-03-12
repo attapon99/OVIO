@@ -1,6 +1,10 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { OvioScreenShell, RecordingCard, type ScreenTab } from "@/screens/ovio-ui";
+import { WeekStrip } from "@/components/WeekStrip";
+import Swipeable from "react-native-gesture-handler/Swipeable";
+
+const SWIPE_ACTIONS_WIDTH = 182;
 
 export default function LibraryScreen({
   onTabPress,
@@ -23,24 +27,69 @@ export default function LibraryScreen({
   ];
   const years = [2022, 2023, 2024, 2025];
   const days = [
-    { weekday: "M", day: 23 },
-    { weekday: "T", day: 24 },
-    { weekday: "W", day: 25 },
-    { weekday: "T", day: 26 },
-    { weekday: "F", day: 27 },
-    { weekday: "S", day: 28 },
-    { weekday: "S", day: 29 },
+    { key: "m-23", label: "M", day: 23 },
+    { key: "t-24", label: "T", day: 24 },
+    { key: "w-25", label: "W", day: 25 },
+    { key: "t-26", label: "T", day: 26 },
+    { key: "f-27", label: "F", day: 27 },
+    { key: "s-28", label: "S", day: 28 },
+    { key: "s-29", label: "S", day: 29 },
   ];
-  const [selectedDay, setSelectedDay] = useState(23);
+  const [activeDayKey, setActiveDayKey] = useState(days[0].key);
   const [selectedMonthIndex, setSelectedMonthIndex] = useState(9);
   const [selectedYear, setSelectedYear] = useState(2023);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const openSwipeableRef = useRef<Swipeable | null>(null);
+  const [isSwipeOpen, setIsSwipeOpen] = useState(false);
+
+  const closeOpenSwipeable = () => {
+    openSwipeableRef.current?.close();
+    openSwipeableRef.current = null;
+    setIsSwipeOpen(false);
+  };
+
+  const handleRequestOpenSwipeable = (swipeable: Swipeable | null) => {
+    if (openSwipeableRef.current && openSwipeableRef.current !== swipeable) {
+      openSwipeableRef.current.close();
+    }
+
+    openSwipeableRef.current = swipeable;
+    setIsSwipeOpen(true);
+  };
+
+  const handleRequestCloseOpenSwipeable = (swipeable: Swipeable | null) => {
+    if (openSwipeableRef.current && openSwipeableRef.current !== swipeable) {
+      openSwipeableRef.current.close();
+      openSwipeableRef.current = null;
+    }
+  };
+
+  const handleSwipeableClosed = (swipeable: Swipeable | null) => {
+    if (openSwipeableRef.current === swipeable) {
+      openSwipeableRef.current = null;
+    }
+    setIsSwipeOpen(false);
+  };
+
+  const handleSelectDay = (dayKey: string) => {
+    setActiveDayKey(dayKey);
+  };
 
   return (
     <OvioScreenShell
       activeTab="library"
       subtitle="BIBLIOTHEK"
       onTabPress={onTabPress}
+      onScrollBeginDrag={closeOpenSwipeable}
+      onMomentumScrollBegin={closeOpenSwipeable}
+      overlay={
+        isSwipeOpen ? (
+          <Pressable
+            style={styles.swipeDismissOverlay}
+            onPressIn={closeOpenSwipeable}
+          />
+        ) : null
+      }
     >
       <View style={styles.sectionHead}>
         <Text style={styles.sectionLabel}>TIMELINE RANGE</Text>
@@ -100,36 +149,11 @@ export default function LibraryScreen({
           </View>
         </View>
       ) : null}
-      <View style={styles.timelineRow}>
-        {days.map((entry) => {
-          const isSelected = selectedDay === entry.day;
-
-          return (
-            <Pressable
-              key={`${entry.weekday}-${entry.day}`}
-              style={isSelected ? styles.activeDateTile : styles.inactiveDateTile}
-              onPress={() => setSelectedDay(entry.day)}
-            >
-              <Text
-                style={
-                  isSelected
-                    ? styles.activeDateWeekday
-                    : styles.inactiveDateWeekday
-                }
-              >
-                {entry.weekday}
-              </Text>
-              <Text
-                style={
-                  isSelected ? styles.activeDateNumber : styles.inactiveDateNumber
-                }
-              >
-                {entry.day}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+      <WeekStrip
+        days={days}
+        activeKey={activeDayKey}
+        onSelect={handleSelectDay}
+      />
 
       <View style={styles.sectionHead}>
         <Text style={styles.sectionLabel}>AUDIO CAPTURED</Text>
@@ -140,48 +164,88 @@ export default function LibraryScreen({
         title="MEETING NOTES: PROJECT X"
         time="09:30"
         duration="05:24"
+        onRequestSwipeStart={handleRequestCloseOpenSwipeable}
+        onRequestWillOpenSwipeable={handleRequestOpenSwipeable}
+        onRequestOpenSwipeable={handleRequestOpenSwipeable}
+        onRequestCloseOpenSwipeable={handleRequestCloseOpenSwipeable}
+        onSwipeableClosed={handleSwipeableClosed}
       />
       <RecordingCard
         tag="MUSIC"
         title="GUITAR PRACTICE_SESSION"
         time="14:10"
         duration="18:02"
+        onRequestSwipeStart={handleRequestCloseOpenSwipeable}
+        onRequestWillOpenSwipeable={handleRequestOpenSwipeable}
+        onRequestOpenSwipeable={handleRequestOpenSwipeable}
+        onRequestCloseOpenSwipeable={handleRequestCloseOpenSwipeable}
+        onSwipeableClosed={handleSwipeableClosed}
       />
       <RecordingCard
         tag="SLEEP"
         title="NIGHT 01: SOFT SNORING CHECK"
         time="23:42"
         duration="42:18"
+        onRequestSwipeStart={handleRequestCloseOpenSwipeable}
+        onRequestWillOpenSwipeable={handleRequestOpenSwipeable}
+        onRequestOpenSwipeable={handleRequestOpenSwipeable}
+        onRequestCloseOpenSwipeable={handleRequestCloseOpenSwipeable}
+        onSwipeableClosed={handleSwipeableClosed}
       />
       <RecordingCard
         tag="VOICE"
         title="TALKING DETECTED: 02:13 AM"
         time="02:13"
         duration="01:06"
+        onRequestSwipeStart={handleRequestCloseOpenSwipeable}
+        onRequestWillOpenSwipeable={handleRequestOpenSwipeable}
+        onRequestOpenSwipeable={handleRequestOpenSwipeable}
+        onRequestCloseOpenSwipeable={handleRequestCloseOpenSwipeable}
+        onSwipeableClosed={handleSwipeableClosed}
       />
       <RecordingCard
         tag="EVENT"
         title="FART EVENT CLIP: BEDROOM MIC"
         time="03:27"
         duration="00:12"
+        onRequestSwipeStart={handleRequestCloseOpenSwipeable}
+        onRequestWillOpenSwipeable={handleRequestOpenSwipeable}
+        onRequestOpenSwipeable={handleRequestOpenSwipeable}
+        onRequestCloseOpenSwipeable={handleRequestCloseOpenSwipeable}
+        onSwipeableClosed={handleSwipeableClosed}
       />
       <RecordingCard
         tag="SLEEP"
         title="NIGHT 02: HEAVY SNORING BLOCK"
         time="00:58"
         duration="17:40"
+        onRequestSwipeStart={handleRequestCloseOpenSwipeable}
+        onRequestWillOpenSwipeable={handleRequestOpenSwipeable}
+        onRequestOpenSwipeable={handleRequestOpenSwipeable}
+        onRequestCloseOpenSwipeable={handleRequestCloseOpenSwipeable}
+        onSwipeableClosed={handleSwipeableClosed}
       />
       <RecordingCard
         tag="AMBIENT"
         title="ROOM NOISE BASELINE SAMPLE"
         time="01:35"
         duration="08:21"
+        onRequestSwipeStart={handleRequestCloseOpenSwipeable}
+        onRequestWillOpenSwipeable={handleRequestOpenSwipeable}
+        onRequestOpenSwipeable={handleRequestOpenSwipeable}
+        onRequestCloseOpenSwipeable={handleRequestCloseOpenSwipeable}
+        onSwipeableClosed={handleSwipeableClosed}
       />
       <RecordingCard
         tag="VOICE"
         title="MUMBLING SEGMENT: 04:42 AM"
         time="04:42"
         duration="00:48"
+        onRequestSwipeStart={handleRequestCloseOpenSwipeable}
+        onRequestWillOpenSwipeable={handleRequestOpenSwipeable}
+        onRequestOpenSwipeable={handleRequestOpenSwipeable}
+        onRequestCloseOpenSwipeable={handleRequestCloseOpenSwipeable}
+        onSwipeableClosed={handleSwipeableClosed}
       />
     </OvioScreenShell>
   );
@@ -221,8 +285,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     gap: 8,
   },
+  swipeDismissOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    right: SWIPE_ACTIONS_WIDTH,
+  },
   pickerLabel: {
-    fontSize: 9,
+    fontSize: 10,
     letterSpacing: 1.2,
     fontWeight: "800",
     color: "#878787",
@@ -260,59 +328,5 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
     fontWeight: "800",
     color: "#fff",
-  },
-  timelineRow: {
-    marginBottom: 18,
-    backgroundColor: "#f4f4f4",
-    borderRadius: 18,
-    paddingVertical: 8,
-    paddingHorizontal: 6,
-    flexDirection: "row",
-    alignItems: "stretch",
-    justifyContent: "space-between",
-    gap: 2,
-  },
-  activeDateTile: {
-    width: 38,
-    borderRadius: 14,
-    backgroundColor: "#060606",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 8,
-  },
-  activeDateWeekday: {
-    fontSize: 8,
-    letterSpacing: 0.5,
-    fontWeight: "700",
-    color: "#a0a0a0",
-  },
-  activeDateNumber: {
-    marginTop: 2,
-    fontSize: 26,
-    lineHeight: 26,
-    letterSpacing: -0.8,
-    fontWeight: "900",
-    color: "#fff",
-  },
-  inactiveDateTile: {
-    flex: 1,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 8,
-  },
-  inactiveDateWeekday: {
-    fontSize: 8,
-    letterSpacing: 0.5,
-    fontWeight: "700",
-    color: "#b0b0b0",
-  },
-  inactiveDateNumber: {
-    marginTop: 2,
-    fontSize: 26,
-    lineHeight: 26,
-    letterSpacing: -0.8,
-    fontWeight: "800",
-    color: "#7e7e7e",
   },
 });

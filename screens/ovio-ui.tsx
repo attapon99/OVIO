@@ -1,6 +1,16 @@
 import { Ionicons } from "@expo/vector-icons";
+import { BlurView } from "expo-blur";
 import { useRef, useState, type ReactNode } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Easing,
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  type ScrollViewProps,
+} from "react-native";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -11,12 +21,27 @@ export function OvioScreenShell({
   activeTab,
   subtitle,
   onTabPress,
+  onScrollBeginDrag,
+  onMomentumScrollBegin,
+  overlay,
 }: {
   children: ReactNode;
   activeTab: ScreenTab;
   subtitle: string;
   onTabPress: (tab: ScreenTab) => void;
+  onScrollBeginDrag?: ScrollViewProps["onScrollBeginDrag"];
+  onMomentumScrollBegin?: ScrollViewProps["onMomentumScrollBegin"];
+  overlay?: ReactNode;
 }) {
+  const [hasCurrentTrack] = useState(true);
+  const currentTrack = hasCurrentTrack
+    ? {
+        title: "Meeting Notes: Project X",
+        subtitle: "Audio Captured",
+        artwork: require("../assets/images/react-logo.png"),
+      }
+    : null;
+
   return (
     <SafeAreaView
       style={styles.screen}
@@ -30,9 +55,20 @@ export function OvioScreenShell({
           style={styles.scroll}
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
+          onScrollBeginDrag={onScrollBeginDrag}
+          onMomentumScrollBegin={onMomentumScrollBegin}
         >
           {children}
         </ScrollView>
+        {overlay}
+        {activeTab === "library" && currentTrack ? (
+          <MiniPlayerBar
+            title={currentTrack.title}
+            subtitle={currentTrack.subtitle}
+            artwork={currentTrack.artwork}
+            bottomOffset={86}
+          />
+        ) : null}
         <BottomNav activeTab={activeTab} onTabPress={onTabPress} />
       </View>
     </SafeAreaView>
@@ -71,19 +107,33 @@ export function RecordingCard({
   title,
   time,
   duration,
+  onRequestSwipeStart,
+  onRequestWillOpenSwipeable,
+  onRequestOpenSwipeable,
+  onRequestCloseOpenSwipeable,
+  onSwipeableClosed,
 }: {
   tag: string;
   title: string;
   time: string;
   duration: string;
+  onRequestSwipeStart?: (swipeable: Swipeable | null) => void;
+  onRequestWillOpenSwipeable?: (swipeable: Swipeable | null) => void;
+  onRequestOpenSwipeable?: (swipeable: Swipeable | null) => void;
+  onRequestCloseOpenSwipeable?: (swipeable: Swipeable | null) => void;
+  onSwipeableClosed?: (swipeable: Swipeable | null) => void;
 }) {
   const swipeableRef = useRef<Swipeable | null>(null);
   const [isSwipedOpen, setIsSwipedOpen] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
   const [minutes = "0", seconds = "0"] = duration.split(":");
   const durationLabel = `${parseInt(minutes, 10) || 0}m ${parseInt(seconds, 10) || 0}s`;
   const closeSwipe = () => {
     swipeableRef.current?.close();
     setIsSwipedOpen(false);
+  };
+  const toggleFavorite = () => {
+    setIsFavorited((currentValue) => !currentValue);
   };
 
   const renderRightActions = () => (
@@ -91,8 +141,18 @@ export function RecordingCard({
       <Pressable style={styles.swipeActionButtonDelete} onPress={closeSwipe}>
         <Ionicons name="trash-outline" size={18} color="#fff" />
       </Pressable>
-      <Pressable style={styles.swipeActionButton} onPress={closeSwipe}>
-        <Ionicons name="heart-outline" size={18} color="#f7f7f7" />
+      <Pressable
+        style={styles.swipeActionButton}
+        onPress={() => {
+          toggleFavorite();
+          closeSwipe();
+        }}
+      >
+        <Ionicons
+          name={isFavorited ? "heart" : "heart-outline"}
+          size={18}
+          color={isFavorited ? "#ff5a5f" : "#f7f7f7"}
+        />
       </Pressable>
       <Pressable style={styles.swipeActionButton} onPress={closeSwipe}>
         <Ionicons name="share-outline" size={18} color="#f7f7f7" />
@@ -106,12 +166,30 @@ export function RecordingCard({
       renderRightActions={renderRightActions}
       overshootRight={false}
       rightThreshold={44}
-      friction={2}
-      onSwipeableOpen={() => setIsSwipedOpen(true)}
-      onSwipeableClose={() => setIsSwipedOpen(false)}
+      friction={1.35}
+      useNativeAnimations
+      animationOptions={{
+        duration: 115,
+        easing: Easing.out(Easing.quad),
+      }}
+      onSwipeableOpenStartDrag={() => {
+        onRequestSwipeStart?.(swipeableRef.current);
+      }}
+      onSwipeableWillOpen={() => {
+        onRequestWillOpenSwipeable?.(swipeableRef.current);
+      }}
+      onSwipeableOpen={() => {
+        setIsSwipedOpen(true);
+        onRequestOpenSwipeable?.(swipeableRef.current);
+      }}
+      onSwipeableClose={() => {
+        setIsSwipedOpen(false);
+        onSwipeableClosed?.(swipeableRef.current);
+      }}
     >
       <Pressable
         style={[styles.recordCard, isSwipedOpen && styles.recordCardActive]}
+        onPress={() => onRequestCloseOpenSwipeable?.(swipeableRef.current)}
       >
         <View style={styles.recordContent}>
           <View style={styles.recordTitleRow}>
@@ -124,9 +202,16 @@ export function RecordingCard({
               </Text>
             </View>
           </View>
-          <Text style={styles.recordMeta} numberOfLines={1}>
-            {time} {durationLabel}
-          </Text>
+          <View style={styles.recordMetaRow}>
+            <Text style={styles.recordMeta} numberOfLines={1}>
+              {time} {durationLabel}
+            </Text>
+            {isFavorited ? (
+              <View style={styles.recordLikeIndicator}>
+                <Ionicons name="heart" size={12} color="#ff6a00" />
+              </View>
+            ) : null}
+          </View>
         </View>
       </Pressable>
     </Swipeable>
@@ -169,6 +254,39 @@ export function PremiumCard() {
   );
 }
 
+function MiniPlayerBar({
+  title,
+  subtitle,
+  artwork,
+  bottomOffset,
+}: {
+  title: string;
+  subtitle?: string;
+  artwork: number;
+  bottomOffset: number;
+}) {
+  return (
+    <View style={[styles.miniPlayerWrap, { bottom: bottomOffset }]}>
+      <BlurView intensity={55} tint="light" style={styles.miniPlayerBlur}>
+        <Image source={artwork} style={styles.miniPlayerArtwork} />
+        <View style={styles.miniPlayerTextWrap}>
+          <Text style={styles.miniPlayerTitle} numberOfLines={1}>
+            {title}
+          </Text>
+          {subtitle ? (
+            <Text style={styles.miniPlayerSubtitle} numberOfLines={1}>
+              {subtitle}
+            </Text>
+          ) : null}
+        </View>
+        <Pressable style={styles.miniPlayerButton} accessibilityRole="button">
+          <Ionicons name="play" size={18} color="#111111" />
+        </Pressable>
+      </BlurView>
+    </View>
+  );
+}
+
 function BottomNav({
   activeTab,
   onTabPress,
@@ -183,19 +301,19 @@ function BottomNav({
   return (
     <View style={styles.bottomNav}>
       <Pressable
-        style={isLibrary ? styles.navButtonActive : styles.navButton}
-        onPress={() => onTabPress("library")}
-      >
-        <Text style={isLibrary ? styles.navIconActive : styles.navIcon}>
-          LIB
-        </Text>
-      </Pressable>
-      <Pressable
         style={isRecording ? styles.navButtonActive : styles.navButton}
         onPress={() => onTabPress("recording")}
       >
         <Text style={isRecording ? styles.navIconActive : styles.navIcon}>
           REC
+        </Text>
+      </Pressable>
+      <Pressable
+        style={isLibrary ? styles.navButtonActive : styles.navButton}
+        onPress={() => onTabPress("library")}
+      >
+        <Text style={isLibrary ? styles.navIconActive : styles.navIcon}>
+          LIB
         </Text>
       </Pressable>
       <Pressable
@@ -228,7 +346,7 @@ export const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 16,
-    paddingBottom: 120,
+    paddingBottom: 206,
   },
   headerRow: {
     flexDirection: "row",
@@ -282,20 +400,27 @@ export const styles = StyleSheet.create({
     color: "#070707",
   },
   recordCard: {
-    backgroundColor: "#f4f4f4",
+    backgroundColor: "#f6f6f6",
     borderRadius: 18,
     minHeight: 75,
-    paddingVertical: 8,
+    paddingVertical: 10,
     paddingLeft: 14,
     paddingRight: 14,
     marginBottom: 10,
     justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#ececec",
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
   },
   recordCardActive: {
     backgroundColor: "#e4e4e4",
   },
   recordContent: {
-    gap: 11,
+    gap: 12,
   },
   recordTitleRow: {
     flexDirection: "row",
@@ -313,26 +438,35 @@ export const styles = StyleSheet.create({
   soundTypeBadge: {
     borderRadius: 5,
     borderWidth: 1,
-    borderColor: "#bebebe",
-    paddingHorizontal: 5,
+    borderColor: "#d2d2d2",
+    backgroundColor: "#f1f1f1",
+    paddingHorizontal: 6,
     paddingVertical: 1,
     alignItems: "center",
     justifyContent: "center",
-    transform: [{ translateY: -1.5 }], //verschiebt das Badge leicht nach oben, damit er nicht unten aligned ist.
   },
   soundTypeText: {
     fontSize: 8,
-    lineHeight: 9,
+    lineHeight: 8,
     includeFontPadding: false,
-    letterSpacing: 0.5,
+    letterSpacing: 0.6,
     fontWeight: "800",
-    color: "#6f6f6f",
+    color: "#666666",
   },
   recordMeta: {
     fontSize: 12,
-    letterSpacing: 0.8,
-    fontWeight: "700",
-    color: "#7a7a7a",
+    letterSpacing: 0.6,
+    fontWeight: "600",
+    color: "#8b8b8b",
+  },
+  recordMetaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  recordLikeIndicator: {
+    marginLeft: 8,
+    alignItems: "center",
+    justifyContent: "center",
   },
   swipeActions: {
     width: 182,
@@ -341,6 +475,7 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
+    overflow: "hidden",
   },
   swipeActionButton: {
     width: 50,
@@ -438,6 +573,64 @@ export const styles = StyleSheet.create({
     right: -22,
     bottom: -32,
     backgroundColor: "#16181b",
+  },
+  miniPlayerWrap: {
+    position: "absolute",
+    left: 16,
+    right: 16,
+    borderRadius: 24,
+    overflow: "hidden",
+    backgroundColor: "rgba(255, 255, 255, 0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.3)",
+    shadowColor: "#000",
+    shadowOpacity: 0.14,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 10,
+  },
+  miniPlayerBlur: {
+    minHeight: 74,
+    paddingVertical: 10,
+    paddingLeft: 10,
+    paddingRight: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+  },
+  miniPlayerArtwork: {
+    width: 54,
+    height: 54,
+    borderRadius: 16,
+    backgroundColor: "rgba(255, 255, 255, 0.35)",
+  },
+  miniPlayerTextWrap: {
+    flex: 1,
+    marginLeft: 12,
+    marginRight: 12,
+    gap: 2,
+  },
+  miniPlayerTitle: {
+    fontSize: 14,
+    letterSpacing: -0.2,
+    fontWeight: "800",
+    color: "#101010",
+  },
+  miniPlayerSubtitle: {
+    fontSize: 11,
+    letterSpacing: 0.2,
+    fontWeight: "600",
+    color: "rgba(17, 17, 17, 0.56)",
+  },
+  miniPlayerButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.34)",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.42)",
   },
   bottomNav: {
     position: "absolute",
