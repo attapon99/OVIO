@@ -4,12 +4,13 @@ import { CalendarModal } from "@/components/CalendarModal";
 import { FilterChipRow, type LibraryFilterChip } from "@/components/FilterChipRow";
 import { TimelineDateRow } from "@/components/TimelineDateRow";
 import { ovioLayout } from "@/design/tokens/layout";
+import {
+  libraryInitialSelectedDate,
+  libraryRecordingItems,
+} from "@/data/library/library-screen-data";
 import { OvioScreenShell, RecordingCard, type ScreenTab } from "@/screens/ovio-ui";
 import { WeekStrip } from "@/components/WeekStrip";
-import {
-  addDays,
-  createLocalDate,
-} from "@/utils/date";
+import { addDays } from "@/utils/date";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 
 export default function LibraryScreen({
@@ -17,14 +18,13 @@ export default function LibraryScreen({
 }: {
   onTabPress: (tab: ScreenTab) => void;
 }) {
-  const [selectedDate, setSelectedDate] = useState(() =>
-    createLocalDate(2023, 9, 23)
-  );
+  const [selectedDate, setSelectedDate] = useState(() => libraryInitialSelectedDate);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const openSwipeableRef = useRef<Swipeable | null>(null);
   const [isSwipeOpen, setIsSwipeOpen] = useState(false);
   const [selectedChip, setSelectedChip] = useState<LibraryFilterChip>("All");
 
+  // Keep swipe coordination in the screen so only one row can stay open at a time.
   const closeOpenSwipeable = () => {
     openSwipeableRef.current?.close();
     openSwipeableRef.current = null;
@@ -100,94 +100,20 @@ export default function LibraryScreen({
         onClose={() => setIsCalendarOpen(false)}
         onSelectDate={handleSelectDate}
       />
-      <RecordingCard
-        tag="WORK"
-        title="MEETING NOTES: PROJECT X"
-        time="09:30"
-        duration="05:24"
-        onRequestSwipeStart={handleRequestCloseOpenSwipeable}
-        onRequestWillOpenSwipeable={handleRequestOpenSwipeable}
-        onRequestOpenSwipeable={handleRequestOpenSwipeable}
-        onRequestCloseOpenSwipeable={handleRequestCloseOpenSwipeable}
-        onSwipeableClosed={handleSwipeableClosed}
-      />
-      <RecordingCard
-        tag="MUSIC"
-        title="GUITAR PRACTICE_SESSION"
-        time="14:10"
-        duration="18:02"
-        onRequestSwipeStart={handleRequestCloseOpenSwipeable}
-        onRequestWillOpenSwipeable={handleRequestOpenSwipeable}
-        onRequestOpenSwipeable={handleRequestOpenSwipeable}
-        onRequestCloseOpenSwipeable={handleRequestCloseOpenSwipeable}
-        onSwipeableClosed={handleSwipeableClosed}
-      />
-      <RecordingCard
-        tag="SLEEP"
-        title="NIGHT 01: SOFT SNORING CHECK"
-        time="23:42"
-        duration="42:18"
-        onRequestSwipeStart={handleRequestCloseOpenSwipeable}
-        onRequestWillOpenSwipeable={handleRequestOpenSwipeable}
-        onRequestOpenSwipeable={handleRequestOpenSwipeable}
-        onRequestCloseOpenSwipeable={handleRequestCloseOpenSwipeable}
-        onSwipeableClosed={handleSwipeableClosed}
-      />
-      <RecordingCard
-        tag="VOICE"
-        title="TALKING DETECTED: 02:13 AM"
-        time="02:13"
-        duration="01:06"
-        onRequestSwipeStart={handleRequestCloseOpenSwipeable}
-        onRequestWillOpenSwipeable={handleRequestOpenSwipeable}
-        onRequestOpenSwipeable={handleRequestOpenSwipeable}
-        onRequestCloseOpenSwipeable={handleRequestCloseOpenSwipeable}
-        onSwipeableClosed={handleSwipeableClosed}
-      />
-      <RecordingCard
-        tag="EVENT"
-        title="FART EVENT CLIP: BEDROOM MIC"
-        time="03:27"
-        duration="00:12"
-        onRequestSwipeStart={handleRequestCloseOpenSwipeable}
-        onRequestWillOpenSwipeable={handleRequestOpenSwipeable}
-        onRequestOpenSwipeable={handleRequestOpenSwipeable}
-        onRequestCloseOpenSwipeable={handleRequestCloseOpenSwipeable}
-        onSwipeableClosed={handleSwipeableClosed}
-      />
-      <RecordingCard
-        tag="SLEEP"
-        title="NIGHT 02: HEAVY SNORING BLOCK"
-        time="00:58"
-        duration="17:40"
-        onRequestSwipeStart={handleRequestCloseOpenSwipeable}
-        onRequestWillOpenSwipeable={handleRequestOpenSwipeable}
-        onRequestOpenSwipeable={handleRequestOpenSwipeable}
-        onRequestCloseOpenSwipeable={handleRequestCloseOpenSwipeable}
-        onSwipeableClosed={handleSwipeableClosed}
-      />
-      <RecordingCard
-        tag="AMBIENT"
-        title="ROOM NOISE BASELINE SAMPLE"
-        time="01:35"
-        duration="08:21"
-        onRequestSwipeStart={handleRequestCloseOpenSwipeable}
-        onRequestWillOpenSwipeable={handleRequestOpenSwipeable}
-        onRequestOpenSwipeable={handleRequestOpenSwipeable}
-        onRequestCloseOpenSwipeable={handleRequestCloseOpenSwipeable}
-        onSwipeableClosed={handleSwipeableClosed}
-      />
-      <RecordingCard
-        tag="VOICE"
-        title="MUMBLING SEGMENT: 04:42 AM"
-        time="04:42"
-        duration="00:48"
-        onRequestSwipeStart={handleRequestCloseOpenSwipeable}
-        onRequestWillOpenSwipeable={handleRequestOpenSwipeable}
-        onRequestOpenSwipeable={handleRequestOpenSwipeable}
-        onRequestCloseOpenSwipeable={handleRequestCloseOpenSwipeable}
-        onSwipeableClosed={handleSwipeableClosed}
-      />
+      {libraryRecordingItems.map((recording) => (
+        <RecordingCard
+          key={recording.id}
+          tag={recording.tag}
+          title={recording.title}
+          time={recording.time}
+          duration={recording.duration}
+          onRequestSwipeStart={handleRequestCloseOpenSwipeable}
+          onRequestWillOpenSwipeable={handleRequestOpenSwipeable}
+          onRequestOpenSwipeable={handleRequestOpenSwipeable}
+          onRequestCloseOpenSwipeable={handleRequestCloseOpenSwipeable}
+          onSwipeableClosed={handleSwipeableClosed}
+        />
+      ))}
     </OvioScreenShell>
   );
 }
