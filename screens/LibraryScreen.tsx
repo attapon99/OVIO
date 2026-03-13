@@ -1,7 +1,13 @@
 import { useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { CalendarModal } from "@/components/CalendarModal";
+import { TimelineDateRow } from "@/components/TimelineDateRow";
 import { OvioScreenShell, RecordingCard, type ScreenTab } from "@/screens/ovio-ui";
 import { WeekStrip } from "@/components/WeekStrip";
+import {
+  addDays,
+  createLocalDate,
+} from "@/utils/date";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 
 const SWIPE_ACTIONS_WIDTH = 182;
@@ -11,34 +17,10 @@ export default function LibraryScreen({
 }: {
   onTabPress: (tab: ScreenTab) => void;
 }) {
-  const months = [
-    "JAN",
-    "FEB",
-    "MAR",
-    "APR",
-    "MAY",
-    "JUN",
-    "JUL",
-    "AUG",
-    "SEP",
-    "OCT",
-    "NOV",
-    "DEC",
-  ];
-  const years = [2022, 2023, 2024, 2025];
-  const days = [
-    { key: "m-23", label: "M", day: 23 },
-    { key: "t-24", label: "T", day: 24 },
-    { key: "w-25", label: "W", day: 25 },
-    { key: "t-26", label: "T", day: 26 },
-    { key: "f-27", label: "F", day: 27 },
-    { key: "s-28", label: "S", day: 28 },
-    { key: "s-29", label: "S", day: 29 },
-  ];
-  const [activeDayKey, setActiveDayKey] = useState(days[0].key);
-  const [selectedMonthIndex, setSelectedMonthIndex] = useState(9);
-  const [selectedYear, setSelectedYear] = useState(2023);
-  const [pickerOpen, setPickerOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(() =>
+    createLocalDate(2023, 9, 23)
+  );
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const openSwipeableRef = useRef<Swipeable | null>(null);
   const [isSwipeOpen, setIsSwipeOpen] = useState(false);
 
@@ -71,8 +53,14 @@ export default function LibraryScreen({
     setIsSwipeOpen(false);
   };
 
-  const handleSelectDay = (dayKey: string) => {
-    setActiveDayKey(dayKey);
+  const handleSelectDate = (date: Date) => {
+    setSelectedDate(date);
+  };
+
+  const handleNavigateWeek = (direction: "previous" | "next") => {
+    const dayOffset = direction === "next" ? 7 : -7;
+
+    handleSelectDate(addDays(selectedDate, dayOffset));
   };
 
   return (
@@ -91,68 +79,20 @@ export default function LibraryScreen({
         ) : null
       }
     >
-      <View style={styles.sectionHead}>
-        <Text style={styles.sectionLabel}>TIMELINE RANGE</Text>
-        <Pressable
-          style={styles.monthChip}
-          onPress={() => setPickerOpen((open) => !open)}
-        >
-          <Text style={styles.sectionMeta}>
-            {months[selectedMonthIndex]} {selectedYear}
-          </Text>
-        </Pressable>
-      </View>
-      {pickerOpen ? (
-        <View style={styles.pickerPanel}>
-          <Text style={styles.pickerLabel}>SELECT MONTH</Text>
-          <View style={styles.monthGrid}>
-            {months.map((month, index) => {
-              const isActive = selectedMonthIndex === index;
-              return (
-                <Pressable
-                  key={month}
-                  style={isActive ? styles.activePickerCell : styles.pickerCell}
-                  onPress={() => setSelectedMonthIndex(index)}
-                >
-                  <Text
-                    style={
-                      isActive ? styles.activePickerText : styles.pickerCellText
-                    }
-                  >
-                    {month}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-
-          <Text style={styles.pickerLabel}>SELECT YEAR</Text>
-          <View style={styles.yearRow}>
-            {years.map((year) => {
-              const isActive = selectedYear === year;
-              return (
-                <Pressable
-                  key={year}
-                  style={isActive ? styles.activePickerCell : styles.pickerCell}
-                  onPress={() => setSelectedYear(year)}
-                >
-                  <Text
-                    style={
-                      isActive ? styles.activePickerText : styles.pickerCellText
-                    }
-                  >
-                    {year}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
-      ) : null}
+      <TimelineDateRow
+        selectedDate={selectedDate}
+        onCalendarPress={() => setIsCalendarOpen(true)}
+      />
       <WeekStrip
-        days={days}
-        activeKey={activeDayKey}
-        onSelect={handleSelectDay}
+        selectedDate={selectedDate}
+        onSelectDate={handleSelectDate}
+        onNavigateWeek={handleNavigateWeek}
+      />
+      <CalendarModal
+        visible={isCalendarOpen}
+        selectedDate={selectedDate}
+        onClose={() => setIsCalendarOpen(false)}
+        onSelectDate={handleSelectDate}
       />
 
       <View style={styles.sectionHead}>
@@ -252,6 +192,12 @@ export default function LibraryScreen({
 }
 
 const styles = StyleSheet.create({
+  sectionLabel: {
+    fontSize: 10,
+    letterSpacing: 2.2,
+    fontWeight: "800",
+    color: "#8a8a8a",
+  },
   sectionHead: {
     marginTop: 2,
     marginBottom: 10,
@@ -259,74 +205,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  sectionLabel: {
-    fontSize: 10,
-    letterSpacing: 2.2,
-    fontWeight: "800",
-    color: "#8a8a8a",
-  },
   sectionMeta: {
     fontSize: 10,
     letterSpacing: 0.4,
     fontWeight: "700",
     color: "#909090",
   },
-  monthChip: {
-    borderRadius: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    backgroundColor: "#efefef",
-  },
-  pickerPanel: {
-    backgroundColor: "#f4f4f4",
-    borderRadius: 14,
-    padding: 10,
-    marginTop: -2,
-    marginBottom: 10,
-    gap: 8,
-  },
   swipeDismissOverlay: {
     ...StyleSheet.absoluteFillObject,
     right: SWIPE_ACTIONS_WIDTH,
-  },
-  pickerLabel: {
-    fontSize: 10,
-    letterSpacing: 1.2,
-    fontWeight: "800",
-    color: "#878787",
-  },
-  monthGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 6,
-    marginBottom: 4,
-  },
-  yearRow: {
-    flexDirection: "row",
-    gap: 6,
-  },
-  pickerCell: {
-    borderRadius: 10,
-    backgroundColor: "#ebebeb",
-    paddingVertical: 7,
-    paddingHorizontal: 10,
-  },
-  activePickerCell: {
-    borderRadius: 10,
-    backgroundColor: "#070707",
-    paddingVertical: 7,
-    paddingHorizontal: 10,
-  },
-  pickerCellText: {
-    fontSize: 10,
-    letterSpacing: 0.6,
-    fontWeight: "700",
-    color: "#717171",
-  },
-  activePickerText: {
-    fontSize: 10,
-    letterSpacing: 0.6,
-    fontWeight: "800",
-    color: "#fff",
   },
 });

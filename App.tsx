@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import LibraryScreen from "./screens/LibraryScreen";
 import RecordingScreen from "./screens/RecordingScreen";
 import SettingsScreen from "./screens/SettingsScreen";
@@ -18,5 +19,9 @@ export default function App() {
     content = <SettingsScreen onTabPress={setActiveTab} />;
   }
 
-  return <GestureHandlerRootView style={{ flex: 1 }}>{content}</GestureHandlerRootView>;
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>{content}</SafeAreaProvider>
+    </GestureHandlerRootView>
+  );
 }

@@ -2,10 +2,11 @@ export type WeekStripDay = {
   key: string;
   label: string;
   day: string | number;
+  date: Date;
 };
 
 export type WeekStripProps = {
-  days: WeekStripDay[];
-  activeKey?: string | null;
-  onSelect?: (key: string) => void;
+  selectedDate: Date;
+  onSelectDate?: (date: Date) => void;
+  onNavigateWeek?: (direction: "previous" | "next") => void;
 };
