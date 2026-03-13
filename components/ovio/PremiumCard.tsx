@@ -5,6 +5,7 @@ import { Pressable, Text, View } from "react-native";
 
 import { styles } from "@/components/ovio/styles";
 
+// Displays the mock premium plan summary card.
 export function PremiumCard() {
   return (
     <Pressable style={styles.premiumCard}>

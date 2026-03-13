@@ -2,6 +2,7 @@
  * Shared spacing tokens for the current OVIO UI.
  * Put repeated margin, padding, and gap values here before reusing them in styles.
  */
+// Use these for repeated spacing values instead of hardcoding the same numbers.
 export const ovioSpacing = {
   8: 8,
   10: 10,

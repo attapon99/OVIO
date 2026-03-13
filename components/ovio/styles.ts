@@ -1,3 +1,7 @@
+/**
+ * Shared OVIO styles.
+ * Use these styles for the extracted OVIO building blocks instead of restyling each file.
+ */
 import { StyleSheet } from "react-native";
 
 import { ovioColors } from "@/design/tokens/colors";
@@ -5,6 +9,7 @@ import { ovioLayout } from "@/design/tokens/layout";
 import { ovioRadius } from "@/design/tokens/radius";
 import { ovioSpacing } from "@/design/tokens/spacing";
 
+// This one style sheet keeps the extracted OVIO components visually in sync.
 export const styles = StyleSheet.create({
   screen: {
     flex: 1,

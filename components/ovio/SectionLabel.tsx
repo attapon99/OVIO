@@ -5,6 +5,7 @@ import { Text } from "react-native";
 
 import { styles } from "@/components/ovio/styles";
 
+// Keeps section headings consistent across OVIO screens.
 export function SectionLabel({ children }: { children: string }) {
   return <Text style={styles.sectionLabel}>{children}</Text>;
 }

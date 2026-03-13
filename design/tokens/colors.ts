@@ -2,6 +2,7 @@
  * Shared color tokens for the current OVIO UI.
  * Put repeated app colors here when the rendered value should stay exactly the same.
  */
+// Use these when an OVIO color appears in more than one place.
 export const ovioColors = {
   backgroundCanvas: "#ececec",
   backgroundSurface: "#f4f4f4",

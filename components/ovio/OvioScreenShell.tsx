@@ -12,6 +12,7 @@ import { OvioBottomNav } from "@/components/ovio/OvioBottomNav";
 import { styles } from "@/components/ovio/styles";
 import type { ScreenTab } from "@/components/ovio/types";
 
+// Wraps each OVIO screen in the shared header, scroll area, and bottom controls.
 export function OvioScreenShell({
   children,
   activeTab,
@@ -29,7 +30,9 @@ export function OvioScreenShell({
   onMomentumScrollBegin?: ScrollViewProps["onMomentumScrollBegin"];
   overlay?: ReactNode;
 }) {
+  // This mock player state stays in the shell because it belongs to the shared layout.
   const [hasCurrentTrack] = useState(true);
+  // The mini player uses this mock track only on the library tab.
   const currentTrack = hasCurrentTrack
     ? {
         title: "Meeting Notes: Project X",

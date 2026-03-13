@@ -1,3 +1,7 @@
+/**
+ * OVIO screen exports.
+ * Other files import shared OVIO UI from here to keep screen imports simple.
+ */
 export type { ScreenTab } from "@/components/ovio/types";
 
 export { OvioScreenShell } from "@/components/ovio/OvioScreenShell";

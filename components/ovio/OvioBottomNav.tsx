@@ -6,6 +6,7 @@ import { Pressable, Text, View } from "react-native";
 import { styles } from "@/components/ovio/styles";
 import type { ScreenTab } from "@/components/ovio/types";
 
+// This is the shared tab bar used at the bottom of every OVIO screen.
 export function OvioBottomNav({
   activeTab,
   onTabPress,
@@ -13,6 +14,7 @@ export function OvioBottomNav({
   activeTab: ScreenTab;
   onTabPress: (tab: ScreenTab) => void;
 }) {
+  // These flags decide which tab uses the active style.
   const isLibrary = activeTab === "library";
   const isRecording = activeTab === "recording";
   const isSettings = activeTab === "settings";

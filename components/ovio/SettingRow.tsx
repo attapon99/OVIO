@@ -5,6 +5,7 @@ import { Pressable, Text, View } from "react-native";
 
 import { styles } from "@/components/ovio/styles";
 
+// Shows one settings line in the shared OVIO settings style.
 export function SettingRow({
   label,
   value,

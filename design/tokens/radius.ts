@@ -2,6 +2,7 @@
  * Shared radius tokens for the current OVIO UI.
  * Put repeated corner radius values here when they appear in more than one place.
  */
+// Use these for shared corner rounding in OVIO components.
 export const ovioRadius = {
   10: 10,
   12: 12,

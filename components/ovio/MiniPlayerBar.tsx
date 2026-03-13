@@ -8,6 +8,7 @@ import { Image, Pressable, Text, View } from "react-native";
 import { styles } from "@/components/ovio/styles";
 import { ovioColors } from "@/design/tokens/colors";
 
+// Shows the current mock track without changing screen layout.
 export function MiniPlayerBar({
   title,
   subtitle,

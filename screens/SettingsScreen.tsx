@@ -1,3 +1,7 @@
+/**
+ * Settings screen for the mock account and app preferences.
+ * This file mostly renders shared OVIO UI from static config data.
+ */
 import {
   OvioScreenShell,
   PremiumCard,
@@ -9,6 +13,7 @@ import {
 import { settingsSections, settingsStats } from "@/data/settings/settings-screen-data";
 import { StyleSheet, View } from "react-native";
 
+// This screen mostly maps static settings data into reusable rows and cards.
 export default function SettingsScreen({
   onTabPress,
 }: {
@@ -44,6 +49,7 @@ export default function SettingsScreen({
 }
 
 const styles = StyleSheet.create({
+  // Keeps the two stat cards side by side.
   statsRow: {
     flexDirection: "row",
     gap: 10,

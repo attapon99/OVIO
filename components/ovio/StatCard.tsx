@@ -5,6 +5,7 @@ import { Text, View } from "react-native";
 
 import { styles } from "@/components/ovio/styles";
 
+// Shows one small summary metric in the settings screen.
 export function StatCard({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.statCard}>

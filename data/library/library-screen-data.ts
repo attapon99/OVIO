@@ -4,6 +4,7 @@
  */
 import { createLocalDate } from "@/utils/date";
 
+// Describes one recording row shown in the library list.
 export type LibraryRecordingItem = {
   id: string;
   tag: string;
@@ -12,8 +13,10 @@ export type LibraryRecordingItem = {
   duration: string;
 };
 
+// This is the first date shown when the library screen opens.
 export const libraryInitialSelectedDate = createLocalDate(2023, 9, 23);
 
+// These mock rows are rendered into the swipeable recording list.
 export const libraryRecordingItems: LibraryRecordingItem[] = [
   {
     id: "meeting-notes-project-x",

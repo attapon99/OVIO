@@ -2,6 +2,7 @@
  * Shared layout tokens for the current OVIO UI.
  * Keep only a small set of repeated shell and layout measurements here.
  */
+// Use these for shared frame sizes and repeated screen measurements.
 export const ovioLayout = {
   screenHorizontalPadding: 16,
   screenBottomInset: 16,

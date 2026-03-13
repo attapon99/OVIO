@@ -9,6 +9,7 @@ import Swipeable from "react-native-gesture-handler/Swipeable";
 import { styles } from "@/components/ovio/styles";
 import { ovioColors } from "@/design/tokens/colors";
 
+// Renders one recording row and keeps its local swipe/favorite UI state.
 export function RecordingCard({
   tag,
   title,
@@ -30,21 +31,28 @@ export function RecordingCard({
   onRequestCloseOpenSwipeable?: (swipeable: Swipeable | null) => void;
   onSwipeableClosed?: (swipeable: Swipeable | null) => void;
 }) {
+  // Holds the swipe row instance so the parent screen can coordinate open rows.
   const swipeableRef = useRef<Swipeable | null>(null);
+  // Used only to tint the card while the swipe actions are open.
   const [isSwipedOpen, setIsSwipedOpen] = useState(false);
+  // Local favorite state only changes this card's icon.
   const [isFavorited, setIsFavorited] = useState(false);
+  // Converts the time string into the label shown under the title.
   const [minutes = "0", seconds = "0"] = duration.split(":");
   const durationLabel = `${parseInt(minutes, 10) || 0}m ${parseInt(seconds, 10) || 0}s`;
 
+  // Closes the swipe row and resets the active style.
   const closeSwipe = () => {
     swipeableRef.current?.close();
     setIsSwipedOpen(false);
   };
 
+  // Keeps the favorite action simple and local to this card.
   const toggleFavorite = () => {
     setIsFavorited((currentValue) => !currentValue);
   };
 
+  // These are the buttons revealed when the user swipes left.
   const renderRightActions = () => (
     <View style={styles.swipeActions}>
       <Pressable style={styles.swipeActionButtonDelete} onPress={closeSwipe}>
@@ -69,6 +77,8 @@ export function RecordingCard({
     </View>
   );
 
+  // Tell the parent screen when this row starts opening or finishes closing.
+  // Tapping the row asks the screen to close any different row that is still open.
   return (
     <Swipeable
       ref={swipeableRef}
