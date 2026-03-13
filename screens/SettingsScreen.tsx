@@ -6,7 +6,8 @@ import {
   StatCard,
   type ScreenTab,
 } from "@/screens/ovio-ui";
-import { View } from "react-native";
+import { settingsSections, settingsStats } from "@/data/settings/settings-screen-data";
+import { StyleSheet, View } from "react-native";
 
 export default function SettingsScreen({
   onTabPress,
@@ -16,26 +17,35 @@ export default function SettingsScreen({
   return (
     <OvioScreenShell activeTab="settings" subtitle="ACCOUNT" onTabPress={onTabPress}>
       <SectionLabel>OBSERVATION_STATS</SectionLabel>
-      <View style={{ flexDirection: "row", gap: 10 }}>
-        <StatCard label="TOTAL HOURS" value="124.5" />
-        <StatCard label="EVENTS CAPTURED" value="892" />
+      <View style={styles.statsRow}>
+        {settingsStats.map((stat) => (
+          <StatCard key={stat.id} label={stat.label} value={stat.value} />
+        ))}
       </View>
 
-      <SectionLabel>CAPTURE_PARAMETERS</SectionLabel>
-      <SettingRow label="SENSITIVITY THRESHOLD" value="HIGH FIDELITY" />
-      <SettingRow label="VOICE DETECTION" toggle />
-      <SettingRow label="SNORING ANALYSIS" toggle />
-      <SettingRow label="FART DETECTION" toggle />
-
-      <SectionLabel>SYSTEM_PREFERENCES</SectionLabel>
-      <SettingRow label="NOTIFICATIONS" toggle />
-      <SettingRow label="DARK MODE" toggle />
-      <SettingRow label="STORAGE USED" value="12 GB USED" />
-      <SettingRow label="EXPORT RECORDINGS" value="EXPORT" />
-      <SettingRow label="PRIVACY" value="SETTINGS" />
+      {settingsSections.map((section) => (
+        <View key={section.title}>
+          <SectionLabel>{section.title}</SectionLabel>
+          {section.rows.map((row) => (
+            <SettingRow
+              key={row.label}
+              label={row.label}
+              value={row.value}
+              toggle={row.toggle}
+            />
+          ))}
+        </View>
+      ))}
 
       <SectionLabel>ACCOUNT_&_BILLING</SectionLabel>
       <PremiumCard />
     </OvioScreenShell>
   );
 }
+
+const styles = StyleSheet.create({
+  statsRow: {
+    flexDirection: "row",
+    gap: 10,
+  },
+});
