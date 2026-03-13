@@ -7,6 +7,7 @@ import { Easing, Pressable, Text, View } from "react-native";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 
 import { styles } from "@/components/ovio/styles";
+import type { RecordingTag } from "@/components/ovio/types";
 import { ovioColors } from "@/design/tokens/colors";
 
 // Renders one recording row and keeps its local swipe/favorite UI state.
@@ -21,7 +22,7 @@ export function RecordingCard({
   onRequestCloseOpenSwipeable,
   onSwipeableClosed,
 }: {
-  tag: string;
+  tag: RecordingTag;
   title: string;
   time: string;
   duration: string;
@@ -117,7 +118,7 @@ export function RecordingCard({
             </Text>
             <View style={styles.soundTypeBadge}>
               <Text style={styles.soundTypeText} numberOfLines={1}>
-                {tag}
+                {tag.toUpperCase()}
               </Text>
             </View>
           </View>
