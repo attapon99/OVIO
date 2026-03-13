@@ -3,6 +3,7 @@ import { Pressable, StyleSheet } from "react-native";
 import { CalendarModal } from "@/components/CalendarModal";
 import { FilterChipRow, type LibraryFilterChip } from "@/components/FilterChipRow";
 import { TimelineDateRow } from "@/components/TimelineDateRow";
+import { ovioLayout } from "@/design/tokens/layout";
 import { OvioScreenShell, RecordingCard, type ScreenTab } from "@/screens/ovio-ui";
 import { WeekStrip } from "@/components/WeekStrip";
 import {
@@ -10,8 +11,6 @@ import {
   createLocalDate,
 } from "@/utils/date";
 import Swipeable from "react-native-gesture-handler/Swipeable";
-
-const SWIPE_ACTIONS_WIDTH = 182;
 
 export default function LibraryScreen({
   onTabPress,
@@ -196,6 +195,6 @@ export default function LibraryScreen({
 const styles = StyleSheet.create({
   swipeDismissOverlay: {
     ...StyleSheet.absoluteFillObject,
-    right: SWIPE_ACTIONS_WIDTH,
+    right: ovioLayout.swipeActionsWidth,
   },
 });

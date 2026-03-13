@@ -1,6 +1,8 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useAppTheme } from "@/design/theme";
+import { ovioColors } from "@/design/tokens/colors";
+import { ovioRadius } from "@/design/tokens/radius";
 
 export function CalendarDayCell({
   dayNumber,
@@ -52,14 +54,14 @@ const styles = StyleSheet.create({
   circle: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: ovioRadius[20],
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "transparent",
   },
   selectedCircle: {
-    backgroundColor: "#0d0d0d",
-    shadowColor: "#000000",
+    backgroundColor: ovioColors.textPrimary,
+    shadowColor: ovioColors.shadowBase,
     shadowOpacity: 0.12,
     shadowRadius: 8,
     shadowOffset: {
@@ -78,7 +80,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   selectedLabel: {
-    color: "#ffffff",
+    color: ovioColors.white,
     fontWeight: "800",
   },
 });

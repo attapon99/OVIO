@@ -16,6 +16,9 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAppTheme } from "@/design/theme";
+import { ovioColors } from "@/design/tokens/colors";
+import { ovioRadius } from "@/design/tokens/radius";
+import { ovioSpacing } from "@/design/tokens/spacing";
 import {
   buildCalendarMonthSections,
   formatCalendarMonthYear,
@@ -286,8 +289,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "#f4f4f4",
-    shadowColor: "#000000",
+    backgroundColor: ovioColors.backgroundSurface,
+    shadowColor: ovioColors.shadowBase,
     shadowOpacity: 0.14,
     shadowRadius: 24,
     shadowOffset: {
@@ -304,9 +307,9 @@ const styles = StyleSheet.create({
     borderLeftWidth: 1,
     borderRightWidth: 1,
     borderBottomWidth: 0,
-    borderTopColor: "#e2e2e2",
-    borderLeftColor: "#e2e2e2",
-    borderRightColor: "#e2e2e2",
+    borderTopColor: ovioColors.borderStandard,
+    borderLeftColor: ovioColors.borderStandard,
+    borderRightColor: ovioColors.borderStandard,
     paddingHorizontal: 22,
     paddingTop: 20,
     paddingBottom: 0,
@@ -324,7 +327,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     minHeight: 42,
-    marginBottom: 10,
+    marginBottom: ovioSpacing[10],
   },
   headerSpacer: {
     width: 36,
@@ -341,10 +344,10 @@ const styles = StyleSheet.create({
   closeButton: {
     width: 36,
     height: 36,
-    borderRadius: 18,
+    borderRadius: ovioRadius[18],
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#ececec",
+    backgroundColor: ovioColors.backgroundCanvas,
     borderWidth: 1,
     borderColor: "#dfdfdf",
     marginTop: 2,
@@ -352,7 +355,7 @@ const styles = StyleSheet.create({
   },
   weekdayRow: {
     flexDirection: "row",
-    marginBottom: 14,
+    marginBottom: ovioSpacing[14],
     paddingHorizontal: 2,
   },
   weekdayLabel: {
@@ -373,7 +376,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listContent: {
-    paddingTop: 8,
+    paddingTop: ovioSpacing[8],
     paddingBottom: 20,
   },
 });

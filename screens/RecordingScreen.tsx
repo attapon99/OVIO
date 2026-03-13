@@ -1,4 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { ovioColors } from "@/design/tokens/colors";
+import { ovioRadius } from "@/design/tokens/radius";
+import { ovioSpacing } from "@/design/tokens/spacing";
 import {
   OvioScreenShell,
   SectionLabel,
@@ -88,12 +91,12 @@ export default function RecordingScreen({
 
 const styles = StyleSheet.create({
   heroCard: {
-    backgroundColor: "#f6f6f6",
-    borderRadius: 24,
-    padding: 18,
+    backgroundColor: ovioColors.backgroundCard,
+    borderRadius: ovioRadius[24],
+    padding: ovioSpacing[18],
     borderWidth: 1,
     borderColor: "#e8e8e8",
-    shadowColor: "#000",
+    shadowColor: ovioColors.shadowBase,
     shadowOpacity: 0.06,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
@@ -120,11 +123,11 @@ const styles = StyleSheet.create({
   },
   statusBadge: {
     minHeight: 28,
-    paddingHorizontal: 10,
-    borderRadius: 14,
+    paddingHorizontal: ovioSpacing[10],
+    borderRadius: ovioRadius[14],
     backgroundColor: "#efefef",
     borderWidth: 1,
-    borderColor: "#e2e2e2",
+    borderColor: ovioColors.borderStandard,
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
@@ -160,11 +163,11 @@ const styles = StyleSheet.create({
   },
   waveformCard: {
     marginTop: 22,
-    borderRadius: 20,
+    borderRadius: ovioRadius[20],
     backgroundColor: "#f0f0f0",
     borderWidth: 1,
-    borderColor: "#e7e7e7",
-    paddingHorizontal: 14,
+    borderColor: ovioColors.borderSoft,
+    paddingHorizontal: ovioSpacing[14],
     paddingTop: 18,
     paddingBottom: 12,
   },
@@ -213,7 +216,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#0e0e0e",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
+    shadowColor: ovioColors.shadowBase,
     shadowOpacity: 0.12,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 8 },
@@ -236,7 +239,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f3f3f3",
   },
   recordButtonLabel: {
-    marginTop: 12,
+    marginTop: ovioSpacing[12],
     fontSize: 10,
     letterSpacing: 2.1,
     fontWeight: "800",
@@ -251,9 +254,9 @@ const styles = StyleSheet.create({
     flex: 1,
     minHeight: 42,
     borderRadius: 21,
-    backgroundColor: "#f4f4f4",
+    backgroundColor: ovioColors.backgroundSurface,
     borderWidth: 1,
-    borderColor: "#e7e7e7",
+    borderColor: ovioColors.borderSoft,
     alignItems: "center",
     justifyContent: "center",
   },

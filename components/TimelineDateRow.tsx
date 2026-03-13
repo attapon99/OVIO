@@ -9,6 +9,9 @@ import {
 } from "react-native";
 
 import { useAppTheme } from "@/design/theme";
+import { ovioColors } from "@/design/tokens/colors";
+import { ovioRadius } from "@/design/tokens/radius";
+import { ovioSpacing } from "@/design/tokens/spacing";
 import { formatTimelineDate } from "@/utils/date";
 
 export function TimelineDateRow({
@@ -52,11 +55,11 @@ export function TimelineDateRow({
 const styles = StyleSheet.create({
   container: {
     marginTop: 4,
-    marginBottom: 14,
+    marginBottom: ovioSpacing[14],
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    gap: 14,
+    gap: ovioSpacing[14],
   },
   dateBlock: {
     flex: 1,
@@ -78,10 +81,10 @@ const styles = StyleSheet.create({
   calendarButton: {
     width: 36,
     height: 36,
-    borderRadius: 12,
+    borderRadius: ovioRadius[12],
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
+    shadowColor: ovioColors.shadowBase,
     shadowOpacity: 0.18,
     shadowRadius: 14,
     shadowOffset: {

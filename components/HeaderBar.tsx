@@ -1,6 +1,9 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import { useAppTheme } from "@/design/theme";
+import { ovioColors } from "@/design/tokens/colors";
+import { ovioRadius } from "@/design/tokens/radius";
+import { ovioSpacing } from "@/design/tokens/spacing";
 
 type Props = {
   title: string;
@@ -67,7 +70,7 @@ const styles = StyleSheet.create({
     marginTop: 1,
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    gap: ovioSpacing[10],
   },
   marker: {
     width: 36,
@@ -75,12 +78,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#141414",
   },
   modeTag: {
-    borderRadius: 10,
-    paddingHorizontal: 10,
+    borderRadius: ovioRadius[10],
+    paddingHorizontal: ovioSpacing[10],
     paddingVertical: 6,
     backgroundColor: "#efefef",
     borderWidth: 1,
-    borderColor: "#dcdcdc",
+    borderColor: ovioColors.borderSubtle,
   },
   modeTagText: {
     fontSize: 10,
