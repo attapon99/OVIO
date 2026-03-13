@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet } from "react-native";
 import { CalendarModal } from "@/components/CalendarModal";
+import { FilterChipRow, type LibraryFilterChip } from "@/components/FilterChipRow";
 import { TimelineDateRow } from "@/components/TimelineDateRow";
 import { OvioScreenShell, RecordingCard, type ScreenTab } from "@/screens/ovio-ui";
 import { WeekStrip } from "@/components/WeekStrip";
@@ -23,6 +24,7 @@ export default function LibraryScreen({
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const openSwipeableRef = useRef<Swipeable | null>(null);
   const [isSwipeOpen, setIsSwipeOpen] = useState(false);
+  const [selectedChip, setSelectedChip] = useState<LibraryFilterChip>("All");
 
   const closeOpenSwipeable = () => {
     openSwipeableRef.current?.close();
@@ -63,6 +65,10 @@ export default function LibraryScreen({
     handleSelectDate(addDays(selectedDate, dayOffset));
   };
 
+  const handleSelectChip = (chip: LibraryFilterChip) => {
+    setSelectedChip(chip);
+  };
+
   return (
     <OvioScreenShell
       activeTab="library"
@@ -88,17 +94,13 @@ export default function LibraryScreen({
         onSelectDate={handleSelectDate}
         onNavigateWeek={handleNavigateWeek}
       />
+      <FilterChipRow selectedChip={selectedChip} onSelectChip={handleSelectChip} />
       <CalendarModal
         visible={isCalendarOpen}
         selectedDate={selectedDate}
         onClose={() => setIsCalendarOpen(false)}
         onSelectDate={handleSelectDate}
       />
-
-      <View style={styles.sectionHead}>
-        <Text style={styles.sectionLabel}>AUDIO CAPTURED</Text>
-        <Text style={styles.sectionMeta}>8 ITEMS</Text>
-      </View>
       <RecordingCard
         tag="WORK"
         title="MEETING NOTES: PROJECT X"
@@ -192,25 +194,6 @@ export default function LibraryScreen({
 }
 
 const styles = StyleSheet.create({
-  sectionLabel: {
-    fontSize: 10,
-    letterSpacing: 2.2,
-    fontWeight: "800",
-    color: "#8a8a8a",
-  },
-  sectionHead: {
-    marginTop: 2,
-    marginBottom: 10,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  sectionMeta: {
-    fontSize: 10,
-    letterSpacing: 0.4,
-    fontWeight: "700",
-    color: "#909090",
-  },
   swipeDismissOverlay: {
     ...StyleSheet.absoluteFillObject,
     right: SWIPE_ACTIONS_WIDTH,
