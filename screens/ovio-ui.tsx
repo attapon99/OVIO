@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { HeaderBar } from "@/components/HeaderBar";
 
 export type ScreenTab = "library" | "recording" | "settings";
 
@@ -49,7 +50,8 @@ export function OvioScreenShell({
     >
       <View style={styles.phoneFrame}>
         <View style={styles.headerContainer}>
-          <OvioHeader subtitle={subtitle} />
+          <HeaderBar title="OVIO" subtitle={subtitle} />
+          <View style={styles.divider} />
         </View>
         <ScrollView
           style={styles.scroll}
@@ -72,20 +74,6 @@ export function OvioScreenShell({
         <BottomNav activeTab={activeTab} onTabPress={onTabPress} />
       </View>
     </SafeAreaView>
-  );
-}
-
-export function OvioHeader({ subtitle }: { subtitle: string }) {
-  return (
-    <>
-      <View style={styles.headerRow}>
-        <View>
-          <Text style={styles.brand}>OVIO</Text>
-          <Text style={styles.subBrand}>{subtitle}</Text>
-        </View>
-      </View>
-      <View style={styles.divider} />
-    </>
   );
 }
 
@@ -347,23 +335,6 @@ export const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 16,
     paddingBottom: 206,
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  brand: {
-    fontSize: 39,
-    letterSpacing: -1,
-    fontWeight: "900",
-    color: "#0d0d0d",
-  },
-  subBrand: {
-    marginTop: 1,
-    fontSize: 10,
-    letterSpacing: 2.2,
-    fontWeight: "700",
-    color: "#626262",
   },
   divider: {
     height: 1,
