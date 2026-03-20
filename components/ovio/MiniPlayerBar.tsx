@@ -32,9 +32,16 @@ export function MiniPlayerBar({
       <BlurView intensity={55} tint="light" style={styles.miniPlayerBlur}>
         <View style={styles.miniPlayerContentRow}>
           <View style={styles.miniPlayerTextBlock}>
-            <Text style={styles.miniPlayerTitle} numberOfLines={1}>
-              {title}
-            </Text>
+            <View style={styles.miniPlayerTitleRow}>
+              <Text style={styles.miniPlayerTitle} numberOfLines={1}>
+                {title}
+              </Text>
+              <RecordingTagBadge
+                tag={tag}
+                containerStyle={styles.miniPlayerTagBadge}
+                textStyle={styles.miniPlayerTagText}
+              />
+            </View>
             {subtitle ? (
               <Text style={styles.miniPlayerSubtitle} numberOfLines={1}>
                 {subtitle}
@@ -42,7 +49,6 @@ export function MiniPlayerBar({
             ) : null}
           </View>
           <View style={styles.miniPlayerRightGroup}>
-            <RecordingTagBadge tag={tag} />
             {isPlaying ? <AudioActivityBars /> : null}
           </View>
         </View>

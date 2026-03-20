@@ -280,7 +280,7 @@ export const styles = StyleSheet.create({
   miniPlayerTextBlock: {
     flex: 1,
     minWidth: 0,
-    gap: 2,
+    gap: 1,
   },
   miniPlayerRightGroup: {
     flexDirection: "row",
@@ -290,21 +290,34 @@ export const styles = StyleSheet.create({
   miniPlayerTitleRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    alignSelf: "flex-start",
+    minWidth: 0,
+    gap: 6,
   },
   miniPlayerTitle: {
-    flex: 1,
     flexShrink: 1,
     fontSize: 14,
+    lineHeight: 16,
     letterSpacing: -0.2,
     fontWeight: "800",
     color: "#101010",
   },
   miniPlayerSubtitle: {
     fontSize: 11,
+    lineHeight: 13,
     letterSpacing: 0.2,
     fontWeight: "600",
     color: "rgba(17, 17, 17, 0.56)",
+  },
+  miniPlayerTagBadge: {
+    marginTop: 1,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+  },
+  miniPlayerTagText: {
+    fontSize: 7,
+    lineHeight: 7,
+    letterSpacing: 0.7,
   },
   miniPlayerWaveform: {
     height: 18,
