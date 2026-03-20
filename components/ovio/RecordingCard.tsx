@@ -6,6 +6,7 @@ import { useRef, useState } from "react";
 import { Easing, Pressable, Text, View } from "react-native";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 
+import { RecordingTagBadge } from "@/components/ovio/RecordingTagBadge";
 import { styles } from "@/components/ovio/styles";
 import type { RecordingTag } from "@/components/ovio/types";
 import { ovioColors } from "@/design/tokens/colors";
@@ -116,11 +117,7 @@ export function RecordingCard({
             <Text style={styles.recordTitle} numberOfLines={1}>
               {title}
             </Text>
-            <View style={styles.soundTypeBadge}>
-              <Text style={styles.soundTypeText} numberOfLines={1}>
-                {tag.toUpperCase()}
-              </Text>
-            </View>
+            <RecordingTagBadge tag={tag} />
           </View>
           <View style={styles.recordMetaRow}>
             <Text style={styles.recordMeta} numberOfLines={1}>

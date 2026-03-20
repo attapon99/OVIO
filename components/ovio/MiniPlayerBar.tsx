@@ -3,36 +3,48 @@
  */
 import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
-import { Image, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
+import { AudioActivityBars } from "@/components/ovio/AudioActivityBars";
+import { RecordingTagBadge } from "@/components/ovio/RecordingTagBadge";
 import { styles } from "@/components/ovio/styles";
+import type { RecordingTag } from "@/components/ovio/types";
 import { ovioColors } from "@/design/tokens/colors";
 
 // Shows the current mock track without changing screen layout.
 export function MiniPlayerBar({
+  tag,
   title,
   subtitle,
   artwork,
+  isPlaying,
   bottomOffset,
 }: {
+  tag: RecordingTag;
   title: string;
   subtitle?: string;
-  artwork: number;
+  artwork?: number;
+  isPlaying: boolean;
   bottomOffset: number;
 }) {
   return (
     <View style={[styles.miniPlayerWrap, { bottom: bottomOffset }]}>
       <BlurView intensity={55} tint="light" style={styles.miniPlayerBlur}>
-        <Image source={artwork} style={styles.miniPlayerArtwork} />
-        <View style={styles.miniPlayerTextWrap}>
-          <Text style={styles.miniPlayerTitle} numberOfLines={1}>
-            {title}
-          </Text>
-          {subtitle ? (
-            <Text style={styles.miniPlayerSubtitle} numberOfLines={1}>
-              {subtitle}
+        <View style={styles.miniPlayerContentRow}>
+          <View style={styles.miniPlayerTextBlock}>
+            <Text style={styles.miniPlayerTitle} numberOfLines={1}>
+              {title}
             </Text>
-          ) : null}
+            {subtitle ? (
+              <Text style={styles.miniPlayerSubtitle} numberOfLines={1}>
+                {subtitle}
+              </Text>
+            ) : null}
+          </View>
+          <View style={styles.miniPlayerRightGroup}>
+            <RecordingTagBadge tag={tag} />
+            {isPlaying ? <AudioActivityBars /> : null}
+          </View>
         </View>
         <Pressable style={styles.miniPlayerButton} accessibilityRole="button">
           <Ionicons name="play" size={18} color={ovioColors.textStrong} />

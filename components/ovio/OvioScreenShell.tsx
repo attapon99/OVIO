@@ -10,7 +10,7 @@ import { HeaderBar } from "@/components/HeaderBar";
 import { MiniPlayerBar } from "@/components/ovio/MiniPlayerBar";
 import { OvioBottomNav } from "@/components/ovio/OvioBottomNav";
 import { styles } from "@/components/ovio/styles";
-import type { ScreenTab } from "@/components/ovio/types";
+import type { RecordingTag, ScreenTab } from "@/components/ovio/types";
 
 // Wraps each OVIO screen in the shared header, scroll area, and bottom controls.
 export function OvioScreenShell({
@@ -32,9 +32,12 @@ export function OvioScreenShell({
 }) {
   // This mock player state stays in the shell because it belongs to the shared layout.
   const [hasCurrentTrack] = useState(true);
+  // This local mock state decides whether the mini player shows active playback UI.
+  const [isMiniPlayerPlaying] = useState(true);
   // The mini player uses this mock track only on the library tab.
   const currentTrack = hasCurrentTrack
     ? {
+        tag: "voice" as RecordingTag,
         title: "Meeting Notes: Project X",
         subtitle: "Audio Captured",
         artwork: require("../../assets/images/react-logo.png"),
@@ -63,9 +66,11 @@ export function OvioScreenShell({
         {overlay}
         {activeTab === "library" && currentTrack ? (
           <MiniPlayerBar
+            tag={currentTrack.tag}
             title={currentTrack.title}
             subtitle={currentTrack.subtitle}
             artwork={currentTrack.artwork}
+            isPlaying={isMiniPlayerPlaying}
             bottomOffset={86}
           />
         ) : null}

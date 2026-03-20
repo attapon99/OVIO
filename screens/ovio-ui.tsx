@@ -12,3 +12,5 @@ export { StatCard } from "@/components/ovio/StatCard";
 export { SettingRow } from "@/components/ovio/SettingRow";
 export { PremiumCard } from "@/components/ovio/PremiumCard";
 export { RecordingCard } from "@/components/ovio/RecordingCard";
+export { RecordingTagBadge } from "@/components/ovio/RecordingTagBadge";
+export { AudioActivityBars } from "@/components/ovio/AudioActivityBars";

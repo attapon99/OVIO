@@ -255,19 +255,13 @@ export const styles = StyleSheet.create({
     elevation: 10,
   },
   miniPlayerBlur: {
-    minHeight: 74,
+    minHeight: 80,
     paddingVertical: ovioSpacing[10],
     paddingLeft: ovioSpacing[10],
     paddingRight: ovioSpacing[12],
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-  },
-  miniPlayerArtwork: {
-    width: 54,
-    height: 54,
-    borderRadius: 16,
-    backgroundColor: "rgba(255, 255, 255, 0.35)",
+    backgroundColor: "rgba(0, 0, 0, 0.17)",
   },
   miniPlayerTextWrap: {
     flex: 1,
@@ -275,7 +269,32 @@ export const styles = StyleSheet.create({
     marginRight: ovioSpacing[12],
     gap: 2,
   },
+  miniPlayerContentRow: {
+    flex: 1,
+    marginLeft: ovioSpacing[12],
+    marginRight: ovioSpacing[12],
+    flexDirection: "row",
+    alignItems: "center",
+    minWidth: 0,
+  },
+  miniPlayerTextBlock: {
+    flex: 1,
+    minWidth: 0,
+    gap: 2,
+  },
+  miniPlayerRightGroup: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  miniPlayerTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
   miniPlayerTitle: {
+    flex: 1,
+    flexShrink: 1,
     fontSize: 14,
     letterSpacing: -0.2,
     fontWeight: "800",
@@ -286,6 +305,17 @@ export const styles = StyleSheet.create({
     letterSpacing: 0.2,
     fontWeight: "600",
     color: "rgba(17, 17, 17, 0.56)",
+  },
+  miniPlayerWaveform: {
+    height: 18,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 2,
+  },
+  miniPlayerWaveformBar: {
+    width: 2,
+    borderRadius: 999,
+    backgroundColor: "rgba(17, 17, 17, 0.68)",
   },
   miniPlayerButton: {
     width: 38,
