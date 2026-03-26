@@ -38,6 +38,12 @@
             "backgroundColor": "#000000"
           }
         }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow OVIO to access your microphone for local recordings."
+        }
       ]
     ],
     "experiments": {

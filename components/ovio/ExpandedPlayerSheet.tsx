@@ -2,9 +2,10 @@
  * Full-screen player sheet that expands from the mini player and dismisses with a swipe-down gesture.
  */
 import { Ionicons } from "@expo/vector-icons";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
+  LayoutChangeEvent,
   PanResponder,
   Pressable,
   Text,
@@ -15,28 +16,50 @@ import {
 import { styles } from "@/components/ovio/styles";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { ovioColors } from "@/design/tokens/colors";
+import { formatPlaybackTimeLabel } from "@/utils/playable-recordings";
 
 const DISMISS_DISTANCE = 140;
 const DISMISS_VELOCITY = 1.05;
-const MOCK_PROGRESS = 0.18;
 
 export function ExpandedPlayerSheet({
   visible,
   title,
   subtitle,
   isPlaying,
+  currentTimeSeconds,
+  durationSeconds,
+  progress,
   onDismiss,
   onTogglePlay,
+  onSeekBackward,
+  onSeekForward,
+  onSeekToProgress,
+  onPreviousTrack,
+  onNextTrack,
+  hasPreviousTrack,
+  hasNextTrack,
 }: {
   visible: boolean;
   title: string;
   subtitle?: string;
   isPlaying: boolean;
+  currentTimeSeconds: number;
+  durationSeconds: number;
+  progress: number;
   onDismiss: () => void;
   onTogglePlay: () => void;
+  onSeekBackward: () => void;
+  onSeekForward: () => void;
+  onSeekToProgress: (progress: number) => void;
+  onPreviousTrack: () => void;
+  onNextTrack: () => void;
+  hasPreviousTrack: boolean;
+  hasNextTrack: boolean;
 }) {
   const { height: windowHeight } = useWindowDimensions();
   const translateY = useRef(new Animated.Value(windowHeight)).current;
+  const [progressTrackWidth, setProgressTrackWidth] = useState(0);
+  const [scrubProgress, setScrubProgress] = useState<number | null>(null);
 
   useEffect(() => {
     if (visible) {
@@ -111,6 +134,60 @@ export function ExpandedPlayerSheet({
     [onDismiss, translateY, visible],
   );
 
+  const progressPanResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => visible && durationSeconds > 0,
+        onMoveShouldSetPanResponder: (_, gestureState) =>
+          visible &&
+          durationSeconds > 0 &&
+          Math.abs(gestureState.dx) >= Math.abs(gestureState.dy),
+        onPanResponderGrant: (event) => {
+          updateScrubProgress(event.nativeEvent.locationX);
+        },
+        onPanResponderMove: (event) => {
+          updateScrubProgress(event.nativeEvent.locationX);
+        },
+        onPanResponderRelease: (event) => {
+          commitScrubProgress(event.nativeEvent.locationX);
+        },
+        onPanResponderTerminate: () => {
+          setScrubProgress(null);
+        },
+      }),
+    [commitScrubProgress, durationSeconds, updateScrubProgress, visible]
+  );
+
+  const displayedProgress = scrubProgress ?? progress;
+  const displayedCurrentTimeSeconds =
+    scrubProgress !== null ? scrubProgress * durationSeconds : currentTimeSeconds;
+  const displayedRemainingTimeSeconds = Math.max(durationSeconds - displayedCurrentTimeSeconds, 0);
+  const currentTimeLabel = formatPlaybackTimeLabel(displayedCurrentTimeSeconds * 1000);
+  const remainingTimeLabel = `-${formatPlaybackTimeLabel(displayedRemainingTimeSeconds * 1000)}`;
+
+  function handleProgressTrackLayout(event: LayoutChangeEvent) {
+    setProgressTrackWidth(event.nativeEvent.layout.width);
+  }
+
+  function updateScrubProgress(locationX: number) {
+    if (progressTrackWidth <= 0 || durationSeconds <= 0) {
+      return;
+    }
+
+    setScrubProgress(clamp(locationX / progressTrackWidth, 0, 1));
+  }
+
+  function commitScrubProgress(locationX: number) {
+    if (progressTrackWidth <= 0 || durationSeconds <= 0) {
+      setScrubProgress(null);
+      return;
+    }
+
+    const nextProgress = clamp(locationX / progressTrackWidth, 0, 1);
+    setScrubProgress(null);
+    onSeekToProgress(nextProgress);
+  }
+
   return (
     <View
       pointerEvents={visible ? "auto" : "none"}
@@ -151,17 +228,21 @@ export function ExpandedPlayerSheet({
           </View>
 
           <View style={styles.expandedPlayerProgressSection}>
-            <View style={styles.expandedPlayerProgressTrack}>
+            <View
+              style={styles.expandedPlayerProgressTrack}
+              onLayout={handleProgressTrackLayout}
+              {...progressPanResponder.panHandlers}
+            >
               <View
                 style={[
                   styles.expandedPlayerProgressFill,
-                  { width: `${MOCK_PROGRESS * 100}%` },
+                  { width: `${displayedProgress * 100}%` },
                 ]}
               />
             </View>
             <View style={styles.expandedPlayerTimeRow}>
-              <Text style={styles.expandedPlayerTimeText}>00:34</Text>
-              <Text style={styles.expandedPlayerTimeText}>-12:00</Text>
+              <Text style={styles.expandedPlayerTimeText}>{currentTimeLabel}</Text>
+              <Text style={styles.expandedPlayerTimeText}>{remainingTimeLabel}</Text>
             </View>
           </View>
         </View>
@@ -170,17 +251,20 @@ export function ExpandedPlayerSheet({
           <Pressable
             accessibilityRole="button"
             style={styles.expandedPlayerIconButton}
+            disabled={!hasPreviousTrack}
+            onPress={onPreviousTrack}
           >
             <Ionicons
               name="play-skip-back"
               size={40}
-              color={ovioColors.white}
+              color={hasPreviousTrack ? ovioColors.white : "rgba(255, 255, 255, 0.35)"}
             />
           </Pressable>
 
           <Pressable
             accessibilityRole="button"
             style={styles.expandedPlayerIconButton}
+            onPress={onSeekBackward}
           >
             <IconSymbol
               name="gobackward.5"
@@ -206,6 +290,7 @@ export function ExpandedPlayerSheet({
           <Pressable
             accessibilityRole="button"
             style={styles.expandedPlayerIconButton}
+            onPress={onSeekForward}
           >
             <IconSymbol
               name="goforward.5"
@@ -219,15 +304,21 @@ export function ExpandedPlayerSheet({
           <Pressable
             accessibilityRole="button"
             style={styles.expandedPlayerIconButton}
+            disabled={!hasNextTrack}
+            onPress={onNextTrack}
           >
             <Ionicons
               name="play-skip-forward"
               size={40}
-              color={ovioColors.white}
+              color={hasNextTrack ? ovioColors.white : "rgba(255, 255, 255, 0.35)"}
             />
           </Pressable>
         </View>
       </Animated.View>
     </View>
   );
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
 }

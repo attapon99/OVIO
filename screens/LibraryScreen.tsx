@@ -1,30 +1,55 @@
 /**
- * Library screen for browsing mock recordings.
+ * Library screen for browsing locally saved recordings.
  * This file keeps the screen state and swipe coordination logic together.
  */
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet } from "react-native";
 import { CalendarModal } from "@/components/CalendarModal";
 import { FilterChipRow, type LibraryFilterChip } from "@/components/FilterChipRow";
 import { TimelineDateRow } from "@/components/TimelineDateRow";
 import { ovioLayout } from "@/design/tokens/layout";
-import {
-  libraryInitialSelectedDate,
-  libraryRecordingItems,
-} from "@/data/library/library-screen-data";
 import { OvioScreenShell, RecordingCard, type ScreenTab } from "@/screens/ovio-ui";
 import { WeekStrip } from "@/components/WeekStrip";
-import { addDays } from "@/utils/date";
+import { addDays, createLocalDate, isSameCalendarDay } from "@/utils/date";
+import {
+  deleteRecordingMetadata,
+  loadRecordingMetadata,
+  type RecordingMetadata,
+} from "@/utils/local-recordings";
+import {
+  formatRecordingClockTime,
+  formatRecordingDurationTimestamp,
+  type PlayableRecording,
+} from "@/utils/playable-recordings";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 
 // This screen owns the library-specific state and interactions.
 export default function LibraryScreen({
   onTabPress,
+  currentTrack,
+  isMiniPlayerPlaying,
+  playerCurrentTimeSeconds,
+  playerDurationSeconds,
+  onSelectRecording,
+  onToggleMiniPlayerPlayback,
+  onSeekBackward,
+  onSeekForward,
+  onSeekToProgress,
 }: {
   onTabPress: (tab: ScreenTab) => void;
+  currentTrack?: PlayableRecording | null;
+  isMiniPlayerPlaying?: boolean;
+  playerCurrentTimeSeconds: number;
+  playerDurationSeconds: number;
+  onSelectRecording: (recording: RecordingMetadata, options?: { autoplay?: boolean }) => void;
+  onToggleMiniPlayerPlayback: () => void;
+  onSeekBackward: () => void;
+  onSeekForward: () => void;
+  onSeekToProgress: (progress: number) => void;
 }) {
+  const today = getToday();
   // The currently focused day in the timeline and calendar.
-  const [selectedDate, setSelectedDate] = useState(() => libraryInitialSelectedDate);
+  const [selectedDate, setSelectedDate] = useState(() => today);
   // Controls whether the calendar sheet is visible.
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   // Tracks the one swipe row that is currently open.
@@ -33,6 +58,29 @@ export default function LibraryScreen({
   const [isSwipeOpen, setIsSwipeOpen] = useState(false);
   // Stores the selected filter chip in the library filter bar.
   const [selectedChip, setSelectedChip] = useState<LibraryFilterChip>("All");
+  const [recordings, setRecordings] = useState<RecordingMetadata[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadRecordings = async () => {
+      const savedRecordings = await loadRecordingMetadata();
+
+      if (isMounted) {
+        setRecordings(savedRecordings);
+
+        if (savedRecordings.length > 0) {
+          setSelectedDate(getDateFromCreatedAt(savedRecordings[0].createdAt));
+        }
+      }
+    };
+
+    void loadRecordings();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Keep swipe coordination in the screen so only one row can stay open at a time.
   const closeOpenSwipeable = () => {
@@ -84,11 +132,61 @@ export default function LibraryScreen({
     setSelectedChip(chip);
   };
 
+  const handleDeleteRecording = async (id: string) => {
+    try {
+      const { remainingEntries } = await deleteRecordingMetadata(id);
+      closeOpenSwipeable();
+      setRecordings(remainingEntries);
+    } catch (error) {
+      console.error(`Failed to delete recording ${id}`, error);
+    }
+  };
+
+  const visibleRecordings = recordings.filter((recording) =>
+    isSameCalendarDay(getDateFromCreatedAt(recording.createdAt), selectedDate)
+  );
+  const currentTrackIndex = currentTrack
+    ? visibleRecordings.findIndex((recording) => recording.id === currentTrack.id)
+    : -1;
+  const hasPreviousTrack = currentTrackIndex > 0;
+  const hasNextTrack =
+    currentTrackIndex >= 0 && currentTrackIndex < visibleRecordings.length - 1;
+
+  const handleSelectPreviousTrack = () => {
+    if (!hasPreviousTrack) {
+      return;
+    }
+
+    const previousRecording = visibleRecordings[currentTrackIndex - 1];
+    onSelectRecording(previousRecording, { autoplay: Boolean(isMiniPlayerPlaying) });
+  };
+
+  const handleSelectNextTrack = () => {
+    if (!hasNextTrack) {
+      return;
+    }
+
+    const nextRecording = visibleRecordings[currentTrackIndex + 1];
+    onSelectRecording(nextRecording, { autoplay: Boolean(isMiniPlayerPlaying) });
+  };
+
   return (
     <OvioScreenShell
       activeTab="library"
       subtitle="BIBLIOTHEK"
       onTabPress={onTabPress}
+      currentTrack={currentTrack}
+      isMiniPlayerPlaying={isMiniPlayerPlaying}
+      playbackCurrentTimeSeconds={playerCurrentTimeSeconds}
+      playbackDurationSeconds={playerDurationSeconds}
+      onToggleMiniPlayerPlayback={onToggleMiniPlayerPlayback}
+      onSeekBackward={onSeekBackward}
+      onSeekForward={onSeekForward}
+      onSeekToProgress={onSeekToProgress}
+      onPreviousTrack={handleSelectPreviousTrack}
+      onNextTrack={handleSelectNextTrack}
+      hasPreviousTrack={hasPreviousTrack}
+      hasNextTrack={hasNextTrack}
       onScrollBeginDrag={closeOpenSwipeable}
       onMomentumScrollBegin={closeOpenSwipeable}
       overlay={
@@ -116,13 +214,15 @@ export default function LibraryScreen({
         onClose={() => setIsCalendarOpen(false)}
         onSelectDate={handleSelectDate}
       />
-      {libraryRecordingItems.map((recording) => (
+      {visibleRecordings.map((recording) => (
         <RecordingCard
           key={recording.id}
-          tag={recording.tag}
+          tag={recording.type}
           title={recording.title}
-          time={recording.time}
-          duration={recording.duration}
+          time={formatRecordingClockTime(recording.createdAt)}
+          duration={formatRecordingDurationTimestamp(recording.durationMillis)}
+          onPress={() => void onSelectRecording(recording, { autoplay: true })}
+          onDelete={() => handleDeleteRecording(recording.id)}
           onRequestSwipeStart={handleRequestCloseOpenSwipeable}
           onRequestWillOpenSwipeable={handleRequestOpenSwipeable}
           onRequestOpenSwipeable={handleRequestOpenSwipeable}
@@ -141,3 +241,13 @@ const styles = StyleSheet.create({
     right: ovioLayout.swipeActionsWidth,
   },
 });
+
+function getDateFromCreatedAt(createdAt: string) {
+  const date = new Date(createdAt);
+  return createLocalDate(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function getToday() {
+  const now = new Date();
+  return createLocalDate(now.getFullYear(), now.getMonth(), now.getDate());
+}

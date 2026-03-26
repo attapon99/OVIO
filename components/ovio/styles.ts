@@ -417,7 +417,7 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     letterSpacing: 0.2,
     fontWeight: "600",
-    color: "rgba(9, 9, 9, 0.76)",
+    color: ovioColors.white,
   },
   expandedPlayerControlsBlock: {
     flexDirection: "row",

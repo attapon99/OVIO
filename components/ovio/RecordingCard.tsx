@@ -3,7 +3,7 @@
  */
 import { Ionicons } from "@expo/vector-icons";
 import { useRef, useState } from "react";
-import { Easing, Pressable, Text, View } from "react-native";
+import { Easing, Pressable, Text, View, type GestureResponderEvent } from "react-native";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 
 import { RecordingTagBadge } from "@/components/ovio/RecordingTagBadge";
@@ -17,6 +17,8 @@ export function RecordingCard({
   title,
   time,
   duration,
+  onDelete,
+  onPress,
   onRequestSwipeStart,
   onRequestWillOpenSwipeable,
   onRequestOpenSwipeable,
@@ -27,6 +29,8 @@ export function RecordingCard({
   title: string;
   time: string;
   duration: string;
+  onDelete?: () => void | Promise<void>;
+  onPress?: () => void;
   onRequestSwipeStart?: (swipeable: Swipeable | null) => void;
   onRequestWillOpenSwipeable?: (swipeable: Swipeable | null) => void;
   onRequestOpenSwipeable?: (swipeable: Swipeable | null) => void;
@@ -40,8 +44,8 @@ export function RecordingCard({
   // Local favorite state only changes this card's icon.
   const [isFavorited, setIsFavorited] = useState(false);
   // Converts the time string into the label shown under the title.
-  const [minutes = "0", seconds = "0"] = duration.split(":");
-  const durationLabel = `${parseInt(minutes, 10) || 0}m ${parseInt(seconds, 10) || 0}s`;
+  const durationParts = duration.split(":").map((value) => parseInt(value, 10) || 0);
+  const durationLabel = formatDurationLabel(durationParts);
 
   // Closes the swipe row and resets the active style.
   const closeSwipe = () => {
@@ -57,7 +61,13 @@ export function RecordingCard({
   // These are the buttons revealed when the user swipes left.
   const renderRightActions = () => (
     <View style={styles.swipeActions}>
-      <Pressable style={styles.swipeActionButtonDelete} onPress={closeSwipe}>
+      <Pressable
+        style={styles.swipeActionButtonDelete}
+        onPress={() => {
+          closeSwipe();
+          void onDelete?.();
+        }}
+      >
         <Ionicons name="trash-outline" size={18} color={ovioColors.white} />
       </Pressable>
       <Pressable
@@ -110,7 +120,10 @@ export function RecordingCard({
     >
       <Pressable
         style={[styles.recordCard, isSwipedOpen && styles.recordCardActive]}
-        onPress={() => onRequestCloseOpenSwipeable?.(swipeableRef.current)}
+        onPress={(_event: GestureResponderEvent) => {
+          onRequestCloseOpenSwipeable?.(swipeableRef.current);
+          onPress?.();
+        }}
       >
         <View style={styles.recordContent}>
           <View style={styles.recordTitleRow}>
@@ -133,4 +146,19 @@ export function RecordingCard({
       </Pressable>
     </Swipeable>
   );
+}
+
+function formatDurationLabel(durationParts: number[]) {
+  if (durationParts.length === 3) {
+    const [hours, minutes, seconds] = durationParts;
+
+    if (hours > 0) {
+      return `${hours}h ${minutes}m ${seconds}s`;
+    }
+
+    return `${minutes}m ${seconds}s`;
+  }
+
+  const [minutes = 0, seconds = 0] = durationParts;
+  return `${minutes}m ${seconds}s`;
 }

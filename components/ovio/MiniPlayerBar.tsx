@@ -3,7 +3,7 @@
  */
 import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, Text, View, type GestureResponderEvent } from "react-native";
 
 import { AudioActivityBars } from "@/components/ovio/AudioActivityBars";
 import { RecordingTagBadge } from "@/components/ovio/RecordingTagBadge";
@@ -20,6 +20,7 @@ export function MiniPlayerBar({
   isPlaying,
   bottomOffset,
   onPress,
+  onTogglePlay,
 }: {
   tag: RecordingTag;
   title: string;
@@ -28,6 +29,7 @@ export function MiniPlayerBar({
   isPlaying: boolean;
   bottomOffset: number;
   onPress?: () => void;
+  onTogglePlay?: () => void;
 }) {
   return (
     <Pressable
@@ -57,7 +59,14 @@ export function MiniPlayerBar({
             {isPlaying ? <AudioActivityBars /> : null}
           </View>
         </View>
-        <Pressable style={styles.miniPlayerButton} accessibilityRole="button">
+        <Pressable
+          style={styles.miniPlayerButton}
+          accessibilityRole="button"
+          onPress={(event: GestureResponderEvent) => {
+            event.stopPropagation();
+            onTogglePlay?.();
+          }}
+        >
           <Ionicons
             name={isPlaying ? "pause" : "play"}
             size={18}

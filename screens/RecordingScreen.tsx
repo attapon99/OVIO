@@ -4,6 +4,7 @@ import { Animated, Easing, Pressable, StyleSheet, Text, View } from "react-nativ
 import { ovioColors } from "@/design/tokens/colors";
 import { ovioRadius } from "@/design/tokens/radius";
 import { ovioSpacing } from "@/design/tokens/spacing";
+import { useLocalAudioRecorder } from "@/hooks/use-local-audio-recorder";
 import { OvioScreenShell, type ScreenTab } from "@/screens/ovio-ui";
 
 type RecordingUiState =
@@ -42,7 +43,6 @@ type RecordingStateConfig = {
 };
 
 const waveformHeights = [52, 38, 60, 44, 68, 50, 62, 40, 56];
-const permissionRecoveryState: RecordingUiState = "idle";
 const microphoneRecoveryState: RecordingUiState = "idle";
 
 const recordingStateConfigs: Record<RecordingUiState, RecordingStateConfig> = {
@@ -163,9 +163,26 @@ export default function RecordingScreen({
   onTabPress: (tab: ScreenTab) => void;
 }) {
   const [currentState, setCurrentState] = useState<RecordingUiState>("idle");
+  const [finishedDurationMillis, setFinishedDurationMillis] = useState(0);
   const pulseAnim = useRef(new Animated.Value(0.72)).current;
   const waveAnims = useRef(waveformHeights.map(() => new Animated.Value(0.45))).current;
+  const {
+    clearError,
+    lastError,
+    pause,
+    recorderState,
+    resume,
+    savedDurationMillis,
+    start,
+    stop,
+  } = useLocalAudioRecorder();
   const stateConfig = recordingStateConfigs[currentState];
+
+  useEffect(() => {
+    if (lastError) {
+      setCurrentState("microphoneUnavailable");
+    }
+  }, [lastError]);
 
   useEffect(() => {
     pulseAnim.setValue(stateConfig.showPulse ? 0.72 : 0);
@@ -225,41 +242,92 @@ export default function RecordingScreen({
     };
   }, [pulseAnim, stateConfig, waveAnims]);
 
-  const handlePrimaryAction = () => {
+  const handlePrimaryAction = async () => {
     switch (currentState) {
-      case "idle":
-        setCurrentState("active");
+      case "idle": {
+        const result = await start();
+
+        if (result.ok) {
+          setCurrentState("active");
+          return;
+        }
+
+        setCurrentState(result.reason);
         return;
-      case "active":
-        setCurrentState("paused");
+      }
+      case "active": {
+        const result = await pause();
+
+        if (result.ok) {
+          setCurrentState("paused");
+          return;
+        }
+
+        setCurrentState(result.reason);
         return;
-      case "paused":
-        setCurrentState("active");
+      }
+      case "paused": {
+        const result = await resume();
+
+        if (result.ok) {
+          setCurrentState("active");
+          return;
+        }
+
+        setCurrentState(result.reason);
         return;
+      }
       case "finished":
         setCurrentState("idle");
+        setFinishedDurationMillis(0);
         onTabPress("library");
         return;
-      case "permissionMissing":
-        setCurrentState(permissionRecoveryState);
+      case "permissionMissing": {
+        clearError();
+
+        const result = await start();
+
+        if (result.ok) {
+          setCurrentState("active");
+          return;
+        }
+
+        setCurrentState(result.reason);
         return;
+      }
       case "microphoneUnavailable":
+        clearError();
         setCurrentState(microphoneRecoveryState);
         return;
     }
   };
 
-  const handleSecondaryAction = () => {
+  const handleSecondaryAction = async () => {
     if (currentState === "active" || currentState === "paused") {
-      setCurrentState("finished");
+      const result = await stop();
+
+      if (result.ok) {
+        setFinishedDurationMillis(result.durationMillis);
+        setCurrentState("finished");
+        return;
+      }
+
+      setCurrentState(result.reason);
     }
   };
+
+  const timerByState = getTimerLabel({
+    currentState,
+    liveDurationMillis: recorderState.durationMillis,
+    finishedDurationMillis: finishedDurationMillis || savedDurationMillis,
+  });
 
   const renderCard = (stateKey: RecordingUiState) => {
     const config = recordingStateConfigs[stateKey];
     const isMessageState =
       stateKey === "permissionMissing" || stateKey === "microphoneUnavailable";
     const cardTitleStyle = [styles.timerText, isMessageState ? styles.messageTitle : null];
+    const timerLabel = timerByState[stateKey] ?? config.timer;
 
     return (
       <View
@@ -296,7 +364,7 @@ export default function RecordingScreen({
             <Text style={styles.centerAccentLabel}>{config.accentLabel}</Text>
           ) : null}
           <Text style={styles.heroTitle}>{config.title}</Text>
-          <Text style={cardTitleStyle}>{config.timer}</Text>
+          <Text style={cardTitleStyle}>{timerLabel}</Text>
           <Text style={styles.heroSubtitle}>{config.supportingText}</Text>
           {config.eventCount ? <Text style={styles.eventCount}>{config.eventCount}</Text> : null}
         </View>
@@ -403,6 +471,37 @@ export default function RecordingScreen({
       {renderCard(currentState)}
     </OvioScreenShell>
   );
+}
+
+function getTimerLabel({
+  currentState,
+  liveDurationMillis,
+  finishedDurationMillis,
+}: {
+  currentState: RecordingUiState;
+  liveDurationMillis: number;
+  finishedDurationMillis: number;
+}) {
+  const activeTimer = formatDuration(liveDurationMillis);
+  const finishedTimer = formatDuration(finishedDurationMillis);
+
+  return {
+    idle: "00:00:00",
+    active: activeTimer,
+    paused: currentState === "paused" ? activeTimer : "00:00:00",
+    finished: finishedTimer,
+    permissionMissing: "Microphone",
+    microphoneUnavailable: "Mic Offline",
+  } satisfies Record<RecordingUiState, string>;
+}
+
+function formatDuration(durationMillis: number) {
+  const totalSeconds = Math.max(0, Math.floor(durationMillis / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  return [hours, minutes, seconds].map((value) => String(value).padStart(2, "0")).join(":");
 }
 
 function getPanelStyle(panelStyle: RecordingStateConfig["panelStyle"]) {
