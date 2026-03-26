@@ -19,6 +19,7 @@ export function MiniPlayerBar({
   artwork,
   isPlaying,
   bottomOffset,
+  onPress,
 }: {
   tag: RecordingTag;
   title: string;
@@ -26,9 +27,13 @@ export function MiniPlayerBar({
   artwork?: number;
   isPlaying: boolean;
   bottomOffset: number;
+  onPress?: () => void;
 }) {
   return (
-    <View style={[styles.miniPlayerWrap, { bottom: bottomOffset }]}>
+    <Pressable
+      onPress={onPress}
+      style={[styles.miniPlayerWrap, { bottom: bottomOffset }]}
+    >
       <BlurView intensity={55} tint="light" style={styles.miniPlayerBlur}>
         <View style={styles.miniPlayerContentRow}>
           <View style={styles.miniPlayerTextBlock}>
@@ -53,9 +58,13 @@ export function MiniPlayerBar({
           </View>
         </View>
         <Pressable style={styles.miniPlayerButton} accessibilityRole="button">
-          <Ionicons name="play" size={18} color={ovioColors.textStrong} />
+          <Ionicons
+            name={isPlaying ? "pause" : "play"}
+            size={18}
+            color={ovioColors.textStrong}
+          />
         </Pressable>
       </BlurView>
-    </View>
+    </Pressable>
   );
 }

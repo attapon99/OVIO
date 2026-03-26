@@ -6,6 +6,7 @@ import { useState, type ReactNode } from "react";
 import { ScrollView, View, type ScrollViewProps } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { ExpandedPlayerSheet } from "@/components/ovio/ExpandedPlayerSheet";
 import { HeaderBar } from "@/components/HeaderBar";
 import { MiniPlayerBar } from "@/components/ovio/MiniPlayerBar";
 import { OvioBottomNav } from "@/components/ovio/OvioBottomNav";
@@ -33,7 +34,8 @@ export function OvioScreenShell({
   // This mock player state stays in the shell because it belongs to the shared layout.
   const [hasCurrentTrack] = useState(true);
   // This local mock state decides whether the mini player shows active playback UI.
-  const [isMiniPlayerPlaying] = useState(true);
+  const [isMiniPlayerPlaying, setIsMiniPlayerPlaying] = useState(true);
+  const [isExpandedPlayerVisible, setIsExpandedPlayerVisible] = useState(false);
   // The mini player uses this mock track only on the library tab.
   const currentTrack = hasCurrentTrack
     ? {
@@ -72,6 +74,19 @@ export function OvioScreenShell({
             artwork={currentTrack.artwork}
             isPlaying={isMiniPlayerPlaying}
             bottomOffset={86}
+            onPress={() => setIsExpandedPlayerVisible(true)}
+          />
+        ) : null}
+        {activeTab === "library" && currentTrack ? (
+          <ExpandedPlayerSheet
+            visible={isExpandedPlayerVisible}
+            title={currentTrack.title}
+            subtitle={currentTrack.subtitle}
+            isPlaying={isMiniPlayerPlaying}
+            onDismiss={() => setIsExpandedPlayerVisible(false)}
+            onTogglePlay={() =>
+              setIsMiniPlayerPlaying((currentValue) => !currentValue)
+            }
           />
         ) : null}
         <OvioBottomNav activeTab={activeTab} onTabPress={onTabPress} />
